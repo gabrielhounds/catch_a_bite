@@ -1,2 +1,2 @@
-# catch_a_bite
+# Catch A Bite
 Airheads Game 1
