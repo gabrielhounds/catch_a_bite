@@ -90,6 +90,10 @@ function init() {
 	var endFrame, overlayEnd, endCtaBg1, endCtaBg2, endCtaHolder1, endCtaHolder2, endCtaText1, endCtaText2, ahLogoEnd, yourScoreText, endSubhead;
 	var cabLogoEnd, cabCatchEnd, cabAEnd, cabBiteEnd, cabBgEnd, cabCandy1End, cabCandy2End, cabCandy3End, cabCandy4End;
 
+	//Sounds
+	var bgSound, flapSound, buttonSound, eatSound, loseSound, winSound, overSound;
+
+
 	//GAME
 	var Application = PIXI.Application,
 	loader 			= PIXI.loader,
@@ -125,6 +129,8 @@ function init() {
 	_width 			= window.innerWidth,
 	_height 		= window.innerHeight;
 
+	var smallScreen = false;
+
 	var ticker 			= new PIXI.ticker.Ticker({ autoStart : false});
 	var introTicker 	= new PIXI.ticker.Ticker({ autoStart : false})
 
@@ -133,22 +139,6 @@ function init() {
 
 	ticker.stop();
 	introTicker.stop();
-
-
-	Sounds = (function() {
-		var bgSound, flapSound, buttonSound, eatSound, loseSound, winSound, overSound;
-		return {
-			bgSound : bgSound,
-			flapSound : flapSound,
-			buttonSound : buttonSound,
-			eatSound : eatSound,
-			loseSound : loseSound,
-			winSound : winSound,
-			overSound : overSound
-		}
-	}());
-
-
 
 	Utils = (function(){
 		var getMousePosition = function() {
@@ -173,10 +163,6 @@ function init() {
 			vy = r1.centerY - r2.centerY;
 			combinedHalfWidths = r1.halfWidth + r2.halfWidth;
 			combinedHalfHeights = r1.halfHeight + r2.halfHeight;
-			CXA = Math.abs(vx);
-			CYA = Math.abs(vy);
-			CHW = combinedHalfWidths;
-			CHH = combinedHalfHeights;
 			if (Math.abs(vx) < combinedHalfWidths) {
 				//Collision X
 				if (Math.abs(vy) < combinedHalfHeights) {
@@ -203,11 +189,27 @@ function init() {
 
 	var game = $('<div>', {id:'game'}).appendTo('body');
 
-	app = new Application({width : 1280, height : 500});
+	if (_width >= 1280 ) {
+		app = new Application({width : 1280, height : 500});
+	} else {
+
+		log('SMALL SCREEN');
+
+		smallScreen = true;
+
+		$(game).css({width:'100%', height:500});
+
+		app = new Application({width : _width, height : 500});
+
+	}
+
+
+
+
 	app.renderer.backgroundColor = 0x0040A3;
 
-	app.renderer.view.width = 1280;
-	app.renderer.view.height = 500;
+	//app.renderer.view.width = 1280;
+	//app.renderer.view.height = 500;
 
 	$(app.view).appendTo(game);
 
@@ -219,8 +221,56 @@ function init() {
 	loadingText.position.set(stageW / 2 - loadingText.width / 2, stageH / 2);
 	app.stage.addChild(loadingText);
 
+	function initAudio() {
+		bgSound = new Howl({
+			src : ['https://c1.undertonevideo.com/clients/Airheads/sounds/bg-sound.mp3'],
+			volume: 0.5,
+			loop: true,
+		});
+		flapSound = new Howl({
+			src : ['https://c1.undertonevideo.com/clients/Airheads/sounds/jump-sound.mp3'],
+			volume: 0.5
+		});
+		buttonSound = new Howl({
+			src : ['https://c1.undertonevideo.com/clients/Airheads/sounds/button-sound.mp3'],
+			volume: 0.5
+		});
+		eatSound = new Howl({
+			src : ['https://c1.undertonevideo.com/clients/Airheads/sounds/eat-sound.mp3'],
+			volume: 0.5
+		});
+		loseSound = new Howl({
+			src : ['https://c1.undertonevideo.com/clients/Airheads/sounds/lose-sound.mp3'],
+			volume: 0.5
+		});
+		winSound = new Howl({
+			src : ['https://c1.undertonevideo.com/clients/Airheads/sounds/win-sound.mp3'],
+			volume: 0.5
+		});
+		overSound = new Howl({
+			src : ['https://c1.undertonevideo.com/clients/Airheads/sounds/over-sound.mp3'],
+			volume: 0.5
+		});
+
+		function updateAudioProgress() {
+			log('AUDIO PROGRESS');
+		}
+
+
+		bgSound.once('load', updateAudioProgress());
+		flapSound.once('load', updateAudioProgress());
+		buttonSound.once('load', updateAudioProgress());
+		eatSound.once('load', updateAudioProgress());
+		loseSound.once('load', updateAudioProgress());
+		winSound.once('load', updateAudioProgress());
+		overSound.once('load', updateAudioProgress());
+	}
+
 	function setUpReplay() {
 		log('SET REPLAY');
+
+		buttonSound.play();
+
 		endCtaHolder1.on('pointerup', null);
 
 		score = 0;
@@ -249,7 +299,8 @@ function init() {
 		t.set([heart1, heart2, heart3], {pixi:{alpha:1}});
 		mainBlur.blur = 0.0;
 		endFrame.position.set(0, stageH);
-
+		setTimeout( function() { bgSound.play(); }, 500);
+		t.to(bgSound, 0.5, {voluem:0.5});
 		playing = true;
 		ticker.start();
 
@@ -278,7 +329,8 @@ function init() {
 	function handleDeath() {
 		log('You Died');
 
-		//loseSound.play();
+		loseSound.play();
+
 		ticker.stop();
 		bottomHits = 0;
 		//airHead.y = -airHead.height;
@@ -309,13 +361,27 @@ function init() {
 
 	function handleGameOver( won ) {
 
+
+
 		playing = false;
 
 		if (won === true ) {
 			log('you win');
+
+			t.to(bgSound, 0.5, {voluem:0, onComplete:function() {
+				setTimeout( function() { winSound.play(); }, 300);
+				bgSound.stop();
+			} });
+
 			endSubhead.setText(' Great job! ' );
 		} else {
 			log('You Lost');
+
+			t.to(bgSound, 0.5, {voluem:0, onComplete:function() {
+				setTimeout( function() { overSound.play(); }, 300);
+				bgSound.stop();
+			} });
+
 			endSubhead.setText(' Nice Try! ' );
 		}
 
@@ -377,7 +443,7 @@ function init() {
 		log('HANDLE FLAP');
 		if (playing === true) {
 			log('FLAP');
-			//flapSound.play();
+			flapSound.play();
 			t.to(rightLeg, 	0.3, {pixi:{rotation:20}});
 			t.to(leftLeg, 	0.3, {pixi:{rotation:40}});
 			t.to(rightArm, 	0.3, {pixi:{rotation:60}});
@@ -470,7 +536,7 @@ function init() {
 		scoreText.setText(score);
 		bgSpeedMod += 0.0001;
 		candySpeedMod += 0.0003;
-		//eatSound.play();
+		eatSound.play();
 	}
 
 	function handleTopHit() {
@@ -504,6 +570,11 @@ function init() {
 	function setUpGame() {
 		log('SET UP GAME');
 
+		initAudio();
+
+		//airHead.y = -airHead.height;
+		airHead.y = -200;
+
 		tlOutro.add('begin')
 		.to(main, 				0.6, {pixi:{blurX:0.0, blurY:0.0}, ease:Power2.easeOut})
 		//.to(cabLogo, 			0.4, {pixi:{y:'-=100', alpha:0.0}, ease:Power3.easeOut}, '-=0.55')
@@ -520,23 +591,16 @@ function init() {
 			intro.alpha = 0.0;
 			intro.destroy();
 			ticker.start();
+			bgSound.play();
 		}
 
-
 		tlOutro.play();
-
 		playing = true;
 		hitRect.on('pointerup', handleFlap);
 	}
 
-	function setControls() {
-		log('SET CONTROLS');
-	}
-
-
 	function buildStage() {
 		log('BUILD STAGE');
-
 		tlIntro.add('begin')
 		.from(main, 		0.5, {pixi:{alpha:0}}, '+=1.0')
 		.from(cabCatch, 	0.8, {pixi:{scale:0.3, alpha:0}, ease:Elastic.easeOut})
@@ -554,11 +618,9 @@ function init() {
 		.from(ctaHolder, 	0.6, {pixi:{y:'+=40', alpha:0, scale:0.5}, ease:Elastic.easeOut}, '-=0.6')
 		.add('end');
 
-
 		app.stage.addChild(main);
 		app.stage.addChild(intro);
 		app.stage.addChild(endFrame);
-
 		endFrame.position.set(0, stageH);
 
 		ctaHolder.on('mouseover', function(e){
@@ -570,13 +632,8 @@ function init() {
 			t.to(ctaBg, 0.6, {pixi:{scale:1.0}, ease:Elastic.easeOut});
 			t.to(ctaText, 0.6, {pixi:{scale:1.0}, ease:Elastic.easeOut});
 		});
-
 		ctaHolder.on('pointerup', setUpGame);
-
 		tlIntro.play();
-
-		setControls();
-
 	}
 
 
@@ -588,7 +645,12 @@ function init() {
 		// -------
 
 		// - overlay
-		overlay.position.set(stageW - overlay.width, 0);
+		if (smallScreen === false) {
+			overlay.position.set(stageW - overlay.width, 0);
+		} else {
+			overlay.position.set(stageW - stageW / 3, 0);
+		}
+
 
 		// - CAB Logo
 		cabCatch.anchor.set(0.5)
@@ -677,6 +739,7 @@ function init() {
 		hedges.position.set(0, 0);
 		street.position.set(0, 360);
 		lightpoles.position.set(0, 0);
+		lightpoles.tilePosition.x -= 200;
 
 		bgHolder.addChild(sky_bg);
 		bgHolder.addChild(buildings);
@@ -710,6 +773,10 @@ function init() {
 		candyHolder.addChild(candy6);
 
 		candies = [candy0, candy1, candy2, candy3, candy4, candy5, candy6];
+
+		for ( var i = 0; i < candies.length; i++ ) {
+			t.set(candies[i], {pixi:{x:Utils.random(stageW, stageW * 2), y:Utils.random(50, stageH - 100)}} );
+		}
 
 		main.addChild(bgHolder);
 		main.addChild(candyHolder);
@@ -780,7 +847,6 @@ function init() {
 
 		endSubhead.position.set(stageW / 3 - endSubhead.width / 2, 284);
 
-
 		endFrame.addChild(overlayEnd);
 		endFrame.addChild(cabLogoEnd);
 		endFrame.addChild(endSubhead);
@@ -788,10 +854,6 @@ function init() {
 		endFrame.addChild(endCtaHolder2);
 		endFrame.addChild(ahLogoEnd);
 		endFrame.addChild(yourScoreText);
-
-
-
-
 
 		buildStage();
 	}
@@ -829,7 +891,6 @@ function init() {
 		ctaBg 		= new PIXI.Sprite(resources['cta_bg.png'].texture);
 		ctaText 		= new PIXI.Text(' Play Now ');
 		overlay 		= new PIXI.Sprite(resources['overlayBg_@2x.png'].texture);
-
 
 		instructionText = new PIXI.Text(' Keep clicking to catch \n all the Airheads! ');
 
@@ -962,19 +1023,10 @@ function init() {
 
 	ticker.add( function(delta){
 
-		//log(delta);
-
-
-
 		handleTimer(delta);
-
 		bgScroll(delta);
 		handleAirHead(delta);
 		candyScroll(delta);
-
-		//handleTimerIcon(elapsedTime);
-
-
 
 	})
 
