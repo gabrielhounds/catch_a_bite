@@ -11,7 +11,7 @@ $(document).ready(function(){
 function init() {
 
 	var log = console.log;
-	log('init');
+	//log('init');
 
 	var Utils = {};
 	var Game = {};
@@ -83,7 +83,7 @@ function init() {
 	var bgHolder, candyHolder, fgHolder, airheadHolder, hitRect;
 	var sky_bg, buildings, trees, hedges, street, lightpoles;
 	var candy0, candy1, candy2, candy3, candy4, candy5, candy6;
-	var airHead, airBody, leftArm, rightArm, leftLeg, rightLeg, torso, head, pelvis, headTextures;
+	var airHead, airBody, leftArm, rightArm, leftLeg, rightLeg, torso, head, pelvis, headTextures, ashleigh;
 	var candies = [];
 
 	//ENDFRAME
@@ -185,25 +185,33 @@ function init() {
 		}
 	}());
 
+	/*
+  	* * * * * * * * * * * * * * *
+
+    = = = SET UP THE STAGE  = = =
+
+    * * * * * * * * * * * * * * *
+    */
+
 
 	var game = $('<div>', {id:'game'}).appendTo('body');
 
 
 	if (_width >= 1280 ) {
 		screenSize = 'desktop';
-		log(screenSize);
+		//log(screenSize);
 		$(game).css({width:1280, height:500});
-		app = new Application({width : 1280, height : 500});
+		app = new Application({width : 1280, height : 500, legacy : true});
 	} else if (_width < 1280 && _width >= 728 ) {
 		screenSize = 'tablet';
-		log(screenSize);
+		//log(screenSize);
 		$(game).css({width:'100%', height:500});
-		app = new Application({width : _width, height : 500});
+		app = new Application({width : _width, height : 500, forceCanvas : true});
 	} else if ( _width < 728 ) {
 		screenSize = 'mobile';
-		log(screenSize);
+		//log(screenSize);
 		$(game).css({width:'100%', height:'100%'});
-		app = new Application({width : _width, height : _height});
+		app = new Application({width : _width, height : _height, forceCanvas : true});
 	}
 
 
@@ -256,9 +264,20 @@ function init() {
 		});
 
 
-
+		var audioCount = 0;
 		function updateAudioProgress() {
-			log('AUDIO PROGRESS');
+			audioCount += 1;
+			//log(audioCount);
+			if (audioCount === 7) {
+				introTicker.stop();
+				introTicker.remove();
+				introTicker.destroy();
+				setTimeout( function() { bgSound.play(); }, 500);
+				intro.alpha = 0.0;
+				intro.destroy();
+				playing = true;
+				ticker.start();
+			}
 		}
 
 
@@ -272,11 +291,13 @@ function init() {
 	}
 
 	function setUpReplay() {
-		log('SET REPLAY');
+		//log('SET REPLAY');
 
 		buttonSound.play();
 
 		endCtaHolder1.off('pointerup');
+
+		airHead.y = -200;
 
 		if (playing === false) {
 			score = 0;
@@ -334,7 +355,7 @@ function init() {
 
 
 	function handleDeath() {
-		log('You Died');
+		//log('You Died');
 
 		loseSound.play();
 
@@ -369,7 +390,7 @@ function init() {
 		playing = false;
 
 		if (won === true ) {
-			log('you win');
+			//log('you win');
 
 			t.to(bgSound, 0.5, {voluem:0, onComplete:function() {
 				setTimeout( function() { winSound.play(); }, 300);
@@ -378,7 +399,7 @@ function init() {
 
 			endSubhead.setText(' Great job! ' );
 		} else {
-			log('You Lost');
+			//log('You Lost');
 
 			t.to(bgSound, 0.5, {voluem:0, onComplete:function() {
 				setTimeout( function() { overSound.play(); }, 300);
@@ -413,7 +434,7 @@ function init() {
 		//, onComplete:setUpEndCta
 
 		function setUpEndCta() {
-			log('end cta');
+			//log('end cta');
 
 			endCtaHolder1.on('mouseover', function(e){
 				t.to(endCtaBg1, 0.6, {pixi:{scale:1.2}, ease:Elastic.easeOut});
@@ -448,6 +469,7 @@ function init() {
 		//log('HANDLE FLAP');
 		if (playing === true) {
 			//log('FLAP');
+
 			flapSound.play();
 			t.to(rightLeg, 	0.3, {pixi:{rotation:20}});
 			t.to(leftLeg, 	0.3, {pixi:{rotation:40}});
@@ -520,12 +542,25 @@ function init() {
 		for ( var i = 0; i < candies.length; i++ ) {
 			candies[i].x -= candySpeed;
 			if (candies[i].x < 0 - candies[i].width) {
-				candies[i].x = stageW + candies[i].width;
+
+				if ( screenSize === 'mobile' ) {
+					candies[i].x = stageW + Utils.random(0, stageW * 2);
+				} else {
+					candies[i].x = stageW + candies[i].width;
+				}
+
 				candies[i].y = Utils.random(50, stageH - 100);
 			}
 			if (Utils.hitTest(candies[i], airHead)) {
 				//log('CANDY COLLISION');
-				candies[i].x = stageW + Utils.random(200, 400);
+				//candies[i].x = stageW + Utils.random(200, 400);
+
+				if ( screenSize === 'mobile' ) {
+					candies[i].x = stageW + Utils.random(0, stageW * 2);
+				} else {
+					candies[i].x = stageW + Utils.random(200, 400);
+				}
+
 				candies[i].y = Utils.random(50, stageH - 100);
 				handleScore();
 			}
@@ -533,6 +568,14 @@ function init() {
 	}
 
 	function handleScore() {
+
+		if (score === 0) {
+			airBody.alpha = (1.0);
+			head.alpha = (1.0);
+			ashleigh.alpha = (0.0);
+		}
+
+
 		head.play();
 		head.onComplete = function() {
 			head.gotoAndStop(0);
@@ -579,7 +622,7 @@ function init() {
 	 - - - - - - - - - - - - - - - - - -
 	*/
 	function setUpGame() {
-		log('SET UP GAME');
+		//log('SET UP GAME');
 
 		initAudio();
 
@@ -599,12 +642,12 @@ function init() {
 
 		function destroyIntro() {
 			//log('Destroy Intro');
-			intro.alpha = 0.0;
-			intro.destroy();
-			playing = true;
-			ticker.start();
-			Howler.volume(0.001);
-			bgSound.play();
+			//intro.alpha = 0.0;
+			//intro.destroy();
+			//playing = true;
+			//ticker.start();
+			//Howler.volume(0.001);
+			//bgSound.play();
 		}
 
 		tlOutro.play();
@@ -612,7 +655,7 @@ function init() {
 	}
 
 	function buildStage() {
-		log('BUILD STAGE');
+		//log('BUILD STAGE');
 		tlIntro.add('begin')
 		.from(main, 		0.5, {pixi:{alpha:0}}, '+=1.0')
 		.from(cabCatch, 	0.8, {pixi:{scale:0.3, alpha:0}, ease:Elastic.easeOut})
@@ -646,10 +689,12 @@ function init() {
 		});
 		ctaHolder.on('pointerup', setUpGame);
 		tlIntro.play();
+
+		introTicker.start();
 	}
 
 	function setPosition() {
-		log('SET POSITION');
+		//log('SET POSITION');
 
 		// -------
 		//  INTRO
@@ -684,7 +729,6 @@ function init() {
 		cabLogo.addChild(cabCandy2);
 		cabLogo.addChild(cabCandy3);
 
-
 		// - CTA
 		ctaBg.anchor.set(0.5);
 		ctaText.anchor.set(0.5);
@@ -703,14 +747,14 @@ function init() {
 
 
 		if (screenSize === 'desktop') {
-			log('Position Desktop');
+			//log('Position Desktop');
 			overlay.position.set(stageW - overlay.width, 0);
 			cabLogo.position.set(stageW / 3 - cabLogo.width / 2 - 20, 20);
 			ctaHolder.position.set( stageW / 3, stageH / 2 + 160);
 			ahLogo.position.set(stageW - ahLogo.width / 2, 160);
 			instructionText.position.set((overlay.x + overlay.width / 2) - instructionText.width / 2, stageH - instructionText.height - 60);
 		} else if ( screenSize === 'tablet' ) {
-			log('Position Tablet');
+			//log('Position Tablet');
 			overlay.position.set( (stageW / 3) * 1.75, 0);
 			cabLogo.scale.set(0.6);
 			cabLogo.position.set(stageW / 3 - cabLogo.width / 2 - 20, 60);
@@ -721,18 +765,25 @@ function init() {
 			instructionText.style.letterSpacing = 1;
 			instructionText.position.set( ((stageW - overlay.x) / 2 ) + overlay.x - instructionText.width / 2, stageH - instructionText.height - 60);
 		} else if ( screenSize === 'mobile') {
-			log ('position mobile');
+			//log ('position mobile');
+
 			overlay.anchor.set(0.5);
 			overlay.width = stageW;
-			overlay.rotation = (Math.PI / 180) * 90;
-			overlay.position.set(stageW - overlay.width / 2, stageH - 100);
 
-			cabLogo.scale.set(0.6);
+			overlay.rotation = (Math.PI / 180) * 90;
+			overlay.position.set(stageW - overlay.width / 2, stageH - 80);
+
+			cabLogo.scale.set(0.4);
 			cabLogo.position.set(stageW / 2 - cabLogo.width / 2 - 20, 60);
 
+
+			ctaHolder.scale.set(0.8);
 			ctaHolder.position.set( stageW / 2, stageH / 2);
-			ahLogo.scale.set(0.70);
-			ahLogo.position.set( stageW / 2, stageH / 2 + ahLogo.height / 2 + 30);
+
+
+			ahLogo.scale.set(0.60);
+			ahLogo.position.set( stageW / 2, stageH / 2 + ahLogo.height / 2 + 20);
+
 			instructionText.style.fontSize = '20px';
 			instructionText.style.letterSpacing = 1;
 			instructionText.position.set( stageW / 2 - instructionText.width / 2, stageH - instructionText.height - 20);
@@ -789,7 +840,11 @@ function init() {
 		airBody.addChild(rightArm);
 		airHead.addChild(airBody);
 		airHead.addChild(head);
+		airHead.addChild(ashleigh);
 		airHead.position.set(stageW / 3, 200);
+
+		airBody.alpha = (0.0);
+		head.alpha = (0.0);
 
 		candy0.anchor.set(0.5);
 		candy1.anchor.set(0.5);
@@ -810,11 +865,10 @@ function init() {
 		candies = [candy0, candy1, candy2, candy3, candy4, candy5, candy6];
 
 		for ( var i = 0; i < candies.length; i++ ) {
+
 			t.set(candies[i], {pixi:{x:Utils.random(stageW, stageW * 2), y:Utils.random(50, stageH - 100)}} );
+
 		}
-
-
-
 
 		if (screenSize === 'mobile') {
 
@@ -822,19 +876,22 @@ function init() {
 			bgHolder.width = stageW;
 			sky_bg.scale.y = 1.2;
 			sky_bg.height = stageH;
-			buildings.position.set(0, 300);
-
-			trees.position.set(0, 420);
 
 			street.height = 278 / 2;
 			street.position.set(0, stageH - street.height);
 
-			hedges.height = 500;
-			hedges.position.set(0, 240);
+			buildings.position.set(0, stageH - street.height - buildings.height - 50);
 
-			lightpoles.height = 500;
-			lightpoles.position.set(0, stageH - lightpoles.height);
-			lightpoles.tilePosition.x -= 200;
+			hedges.height = stageH;
+			hedges.position.set(0, street.height - 20);
+
+			trees.position.set(0, stageH - street.height - trees.height - 60);
+
+
+			lightpoles.alpha = 0;
+			//lightpoles.height = 500;
+			//lightpoles.position.set(0, stageH - lightpoles.height);
+			//lightpoles.tilePosition.x -= 200;
 
 		} else {
 
@@ -904,16 +961,24 @@ function init() {
 		ahLogoEnd.loop = false;
 
 		if (screenSize === 'desktop') {
-			log('Position Desktop EndFrame');
+			//log('Position Desktop EndFrame');
 			cabLogoEnd.scale.set(0.42);
 			cabLogoEnd.position.set(stageW / 3 - cabLogoEnd.width / 2 - 10, 26);
 			yourScoreText.position.set(stageW / 3 - yourScoreText.width / 2, 168);
 			endSubhead.position.set(stageW / 3 - endSubhead.width / 2, 284);
-			endCtaHolder1.position.set(stageW / 3 - endCtaHolder1.width / 2 - 20, stageH / 2 + 180);
-			endCtaHolder2.position.set(stageW / 3 + endCtaHolder2.width / 2 + 20, stageH / 2 + 180);
+
+
+			endCtaHolder1.position.set(stageW / 3 , stageH / 2 + 180);
+
+			endCtaHolder2.position.set( (stageW / 2 +  stageW / 5) + endCtaHolder2.width / 2, stageH / 2 + 180);
+
+
+
 			ahLogoEnd.position.set(stageW - ahLogo.width / 2, 220);
+
+
 		} else if ( screenSize === 'tablet' ) {
-			log('Position Tablet EndFrame');
+			//log('Position Tablet EndFrame');
 
 			cabLogoEnd.scale.set(0.42);
 			cabLogoEnd.position.set(stageW / 3 - cabLogoEnd.width / 2 - 10, stageH / 4 - cabLogoEnd.height / 2);
@@ -934,7 +999,7 @@ function init() {
 			ahLogoEnd.position.set( stageW - ahLogoEnd.width / 2 + 40, stageH / 2 );
 
 		} else if ( screenSize === 'mobile') {
-			log ('position mobile EndFrame');
+			//log ('position mobile EndFrame');
 
 			overlayEnd.width = stageW;
 			overlayEnd.height = stageH;
@@ -962,14 +1027,6 @@ function init() {
 
 		}
 
-
-
-
-
-
-
-
-
 		endFrame.addChild(overlayEnd);
 		endFrame.addChild(cabLogoEnd);
 		endFrame.addChild(endSubhead);
@@ -986,7 +1043,7 @@ function init() {
 	}
 
 	function setUp() {
-		log('SETUP')
+		//log('SETUP')
 		t.to(loadingText, 0.3, {pixi:{alpha:0, y:'+=10'}, ease:Power3.easeOut, delay:0.5});
 		// Filters
 		mainBlur = new PIXI.filters.BlurFilter();
@@ -1088,6 +1145,8 @@ function init() {
 		rightArm 		= new PIXI.Sprite(resources['ah_rightArm.png'].texture);
 		leftArm 		= new PIXI.Sprite(resources['ah_leftArm.png'].texture);
 
+		ashleigh	    = new PIXI.Sprite(resources['ashleigh.png'].texture);
+
 		rightArm.pivot.set(6, 4);
 		rightArm.position.set(43-55+6, 181-178+4);
 		rightLeg.pivot.set(22, 0);
@@ -1098,6 +1157,9 @@ function init() {
 		torso.position.set(40-55+16, 175-178+6);
 		leftArm.pivot.set(0, 6);
 		leftArm.position.set(62-55+0, 180-178+6);
+
+		ashleigh.pivot.set(0, 75);
+		ashleigh.anchor.set(0.5);
 
 		// - Candy
 		candyHolder 	= new PIXI.Container();
@@ -1141,17 +1203,77 @@ function init() {
 	}
 
 	loader.add([
-		'buildings_@2x.png', 'hedge_@2x.png', 'lightpost_foreground_@2x.png', 'road_@2x.jpg', 'sky_bg_@2x.jpg', 'trees_@2x.png', 'overlayBg_@2x.png', 'ah_body.png', 'ah_head_00.png', 'ah_head_01.png', 'ah_head_02.png', 'ah_leftArm.png', 'ah_leftLeg.png', 'ah_pelvis.png', 'ah_rightArm.png', 'ah_rightLeg.png', 'candy_00.png', 'candy_01.png', 'candy_02.png', 'candy_03.png', 'candy_04.png', 'candy_05.png', 'candy_06.png', 'heart.png', 'cta_bg.png', 'logo00.png', 'logo01.png', 'logo02.png', 'logo03.png', 'logo04.png', 'logo05.png', 'logo06.png', 'logo07.png', 'logo08.png', 'logo09.png', 'logo10.png', 'logo11.png', 'logo12.png', 'cab_catch.png', 'cab_a.png', 'cab_bite.png', 'cab_bg.png', 'cab_candy1.png', 'cab_candy2.png', 'cab_candy3.png', 'cab_candy4.png', 'endOverlay.png',
+		'buildings_@2x.png', 'hedge_@2x.png', 'lightpost_foreground_@2x.png', 'road_@2x.jpg', 'sky_bg_@2x.jpg', 'trees_@2x.png', 'overlayBg_@2x.png', 'ah_body.png', 'ah_head_00.png', 'ah_head_01.png', 'ah_head_02.png', 'ah_leftArm.png', 'ah_leftLeg.png', 'ah_pelvis.png', 'ah_rightArm.png', 'ah_rightLeg.png', 'candy_00.png', 'candy_01.png', 'candy_02.png', 'candy_03.png', 'candy_04.png', 'candy_05.png', 'candy_06.png', 'heart.png', 'cta_bg.png', 'logo00.png', 'logo01.png', 'logo02.png', 'logo03.png', 'logo04.png', 'logo05.png', 'logo06.png', 'logo07.png', 'logo08.png', 'logo09.png', 'logo10.png', 'logo11.png', 'logo12.png', 'cab_catch.png', 'cab_a.png', 'cab_bite.png', 'cab_bg.png', 'cab_candy1.png', 'cab_candy2.png', 'cab_candy3.png', 'cab_candy4.png', 'endOverlay.png', 'ashleigh.png'
 	]).on('progress', loadProgressHandler).load(setUp);
 
 	ticker.add( function(delta){
-
 		handleTimer(delta);
-		bgScroll(delta);
-		handleAirHead(delta);
 		candyScroll(delta);
+		handleAirHead(delta);
+		bgScroll(delta);
+	});
 
-	})
+	function candyIntro(delta) {
+		for ( var i = 0; i < candies.length; i++ ) {
+			candies[i].x -= candySpeed;
+			if (candies[i].x < 0 - candies[i].width) {
+				candies[i].x = stageW + candies[i].width;
+				candies[i].y = Utils.random(50, stageH - 100);
+			}
+		}
+	}
+
+	var speed = 20;
+	var angle = 45;
+	var dx, dy, ax, ay;
+	var vx = 0;
+	var vy = 0;
+	var zx = 0, zy = 0;
+	var easing = 1.0;
+	var spring = 0.04;
+	var friction = 0.85;
+	var gravity = 2;
+	var bodySpring = 2;
+	var bodyFriction = 0.95;
+	var flopRate =  2.5;  //4.625;
+	var bodyFlopRate = 1.5;
+
+	introTicker.add( function(delta){
+		mousePos = Utils.getMousePosition();
+		dx = (mousePos.x - airHead.x) * easing;
+		dy = ((mousePos.y - 120 )- (airHead.y)) * easing;
+		ax = dx * spring;
+		ay = dy * spring;
+		vx += ax;
+		vy += ay;
+		vx *= friction;
+		vy *= friction;
+		//airHead.x += vx;
+		airHead.y += vy + 30;
+
+		//head.rotation = (-dx / flopRate * (Math.PI / 180));
+		rightLeg.rotation = (dx / 1.5 * (Math.PI / 180));
+		leftLeg.rotation = (dx / 2.5 * (Math.PI / 180));
+		leftArm.rotation = (dx / flopRate * (Math.PI / 180));
+		rightArm.rotation = (dx / flopRate * (Math.PI / 180));
+		airBody.rotation = (dx / 20.5 * (Math.PI / 180));
+
+		//head.rotation = (-dy / flopRate * (Math.PI / 180));
+		//log( 'ROTATION: ' + (dx * (Math.PI / 180)) );
+		//head.rotation += ( Math.PI / 360 ) * vx;
+
+		gx = (airHead.x - head.x) * easing;
+		gy = (airHead.y - head.y) * easing;
+		jx = gx * bodySpring;
+		jy = gy * bodySpring;
+		zx += jx;
+		zy += jy;
+		zx *= bodyFriction;
+		zy *= bodyFriction;
+
+		bgScroll();
+		candyIntro(delta);
+	});
 
 
 
