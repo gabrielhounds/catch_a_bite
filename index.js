@@ -128,7 +128,7 @@ function init() {
 	_width 			= window.innerWidth,
 	_height 		= window.innerHeight;
 
-	var smallScreen = false;
+	var screenSize;
 
 	var ticker 			= new PIXI.ticker.Ticker({ autoStart : false});
 	var introTicker 	= new PIXI.ticker.Ticker({ autoStart : false})
@@ -188,18 +188,22 @@ function init() {
 
 	var game = $('<div>', {id:'game'}).appendTo('body');
 
+
 	if (_width >= 1280 ) {
+		screenSize = 'desktop';
+		log(screenSize);
+		$(game).css({width:1280, height:500});
 		app = new Application({width : 1280, height : 500});
-	} else {
-
-		log('SMALL SCREEN');
-
-		smallScreen = true;
-
+	} else if (_width < 1280 && _width >= 728 ) {
+		screenSize = 'tablet';
+		log(screenSize);
 		$(game).css({width:'100%', height:500});
-
 		app = new Application({width : _width, height : 500});
-
+	} else if ( _width < 728 ) {
+		screenSize = 'mobile';
+		log(screenSize);
+		$(game).css({width:'100%', height:'100%'});
+		app = new Application({width : _width, height : _height});
 	}
 
 
@@ -251,6 +255,8 @@ function init() {
 			volume: 0.5
 		});
 
+
+
 		function updateAudioProgress() {
 			log('AUDIO PROGRESS');
 		}
@@ -270,7 +276,7 @@ function init() {
 
 		buttonSound.play();
 
-		endCtaHolder1.on('pointerup', null);
+		endCtaHolder1.off('pointerup');
 
 		if (playing === false) {
 			score = 0;
@@ -383,7 +389,7 @@ function init() {
 		}
 
 		yourScoreText.setText(' Your score: ' + score + ' ');
-		yourScoreText.position.set(stageW / 3 - yourScoreText.width / 2, 168);
+		//yourScoreText.position.set(stageW / 3 - yourScoreText.width / 2, 168);
 
 		tlGameOver.add('begin')
 		.to(main, 				0.3, {pixi:{blurX:10.0, blurY:10.0}}, '+=1.0')
@@ -556,7 +562,7 @@ function init() {
 		interfaceHolder.removeChild(timerIcon);
 		timerIcon = new PIXI.Graphics();
 		timerIcon.lineStyle(6, 0xFF3300, 1);
-		timerIcon.arc(stageW - 80, 460, 10, 0 , timerSectorLength, false);
+		timerIcon.arc(stageW - 80, stageH - 40, 10, 0 , timerSectorLength, false);
 		interfaceHolder.addChild(timerIcon);
 
 		if (Math.ceil(gameTime)  <= 0 ) {
@@ -565,7 +571,13 @@ function init() {
 		}
 	}
 
-
+	/*
+	 - - - - - - - - - - - - - - - - - -
+	 = = = = = = = = = = = = = = = = = =
+	 = = = = = BEGIN GAME PLAY = = = = =
+	 = = = = = = = = = = = = = = = = = =
+	 - - - - - - - - - - - - - - - - - -
+	*/
 	function setUpGame() {
 		log('SET UP GAME');
 
@@ -589,12 +601,13 @@ function init() {
 			//log('Destroy Intro');
 			intro.alpha = 0.0;
 			intro.destroy();
+			playing = true;
 			ticker.start();
+			Howler.volume(0.001);
 			bgSound.play();
 		}
 
 		tlOutro.play();
-		playing = true;
 		hitRect.on('pointerup', handleFlap);
 	}
 
@@ -635,7 +648,6 @@ function init() {
 		tlIntro.play();
 	}
 
-
 	function setPosition() {
 		log('SET POSITION');
 
@@ -644,30 +656,25 @@ function init() {
 		// -------
 
 		// - overlay
-		if (smallScreen === false) {
-			overlay.position.set(stageW - overlay.width, 0);
-		} else {
-			overlay.position.set(stageW - stageW / 3, 0);
-		}
-
 
 		// - CAB Logo
 		cabCatch.anchor.set(0.5)
-		cabCatch.position.set(cabCatch.width / 2, cabCatch.height / 2);
 		cabA.anchor.set(0.5)
-		cabA.position.set(cabA.width / 2, cabA.height / 2);
 		cabBite.anchor.set(0.5)
-		cabBite.position.set(cabBite.width / 2, cabBite.height / 2);
 		cabBg.anchor.set(0.5)
-		cabBg.position.set(cabBg.width / 2, cabBg.height / 2);
 		cabCandy1.anchor.set(0.5)
-		cabCandy1.position.set(cabBg.width / 2, cabBg.height / 2);
 		cabCandy2.anchor.set(0.5)
-		cabCandy2.position.set(cabBg.width / 2, cabBg.height / 2);
 		cabCandy3.anchor.set(0.5)
-		cabCandy3.position.set(cabBg.width / 2, cabBg.height / 2);
 		cabCandy4.anchor.set(0.5)
+		cabCatch.position.set(cabCatch.width / 2, cabCatch.height / 2);
+		cabA.position.set(cabA.width / 2, cabA.height / 2);
+		cabBite.position.set(cabBite.width / 2, cabBite.height / 2);
+		cabBg.position.set(cabBg.width / 2, cabBg.height / 2);
+		cabCandy1.position.set(cabBg.width / 2, cabBg.height / 2);
+		cabCandy2.position.set(cabBg.width / 2, cabBg.height / 2);
+		cabCandy3.position.set(cabBg.width / 2, cabBg.height / 2);
 		cabCandy4.position.set(cabBg.width / 2, cabBg.height / 2);
+
 		cabLogo.addChild(cabCandy4);
 		cabLogo.addChild(cabBg);
 		cabLogo.addChild(cabCatch);
@@ -676,13 +683,11 @@ function init() {
 		cabLogo.addChild(cabCandy1);
 		cabLogo.addChild(cabCandy2);
 		cabLogo.addChild(cabCandy3);
-		cabLogo.position.set(stageW / 3 - cabLogo.width / 2 - 20, 20);
+
 
 		// - CTA
 		ctaBg.anchor.set(0.5);
 		ctaText.anchor.set(0.5);
-		ctaHolder.pivot.set(ctaHolder.width /2, ctaHolder.height / 2);
-		ctaHolder.position.set( stageW / 3 - ctaHolder.width / 2, stageH / 2 + 160);
 		ctaHolder.interactive = true;
 		ctaHolder.buttonMode = true;
 		ctaHolder.addChild(ctaBg);
@@ -690,12 +695,49 @@ function init() {
 
 		// - Airheads Logo
 		ahLogo.anchor.set(0.5);
-		ahLogo.position.set(stageW - ahLogo.width / 2 + 60, 160);
 		ahLogo.animationSpeed = 0.3;
 		ahLogo.loop = false;
 
 		// - Instruction Text
-		instructionText.position.set((overlay.x + overlay.width / 2) - instructionText.width / 2, stageH - instructionText.height - 60);
+
+
+
+		if (screenSize === 'desktop') {
+			log('Position Desktop');
+			overlay.position.set(stageW - overlay.width, 0);
+			cabLogo.position.set(stageW / 3 - cabLogo.width / 2 - 20, 20);
+			ctaHolder.position.set( stageW / 3, stageH / 2 + 160);
+			ahLogo.position.set(stageW - ahLogo.width / 2, 160);
+			instructionText.position.set((overlay.x + overlay.width / 2) - instructionText.width / 2, stageH - instructionText.height - 60);
+		} else if ( screenSize === 'tablet' ) {
+			log('Position Tablet');
+			overlay.position.set( (stageW / 3) * 1.75, 0);
+			cabLogo.scale.set(0.6);
+			cabLogo.position.set(stageW / 3 - cabLogo.width / 2 - 20, 60);
+			ctaHolder.position.set( stageW / 3, stageH / 2 + 160);
+			ahLogo.scale.set(0.70);
+			ahLogo.position.set(stageW - ahLogo.width / 2 + 20, 160);
+			instructionText.style.fontSize = '20px';
+			instructionText.style.letterSpacing = 1;
+			instructionText.position.set( ((stageW - overlay.x) / 2 ) + overlay.x - instructionText.width / 2, stageH - instructionText.height - 60);
+		} else if ( screenSize === 'mobile') {
+			log ('position mobile');
+			overlay.anchor.set(0.5);
+			overlay.width = stageW;
+			overlay.rotation = (Math.PI / 180) * 90;
+			overlay.position.set(stageW - overlay.width / 2, stageH - 100);
+
+			cabLogo.scale.set(0.6);
+			cabLogo.position.set(stageW / 2 - cabLogo.width / 2 - 20, 60);
+
+			ctaHolder.position.set( stageW / 2, stageH / 2);
+			ahLogo.scale.set(0.70);
+			ahLogo.position.set( stageW / 2, stageH / 2 + ahLogo.height / 2 + 30);
+			instructionText.style.fontSize = '20px';
+			instructionText.style.letterSpacing = 1;
+			instructionText.position.set( stageW / 2 - instructionText.width / 2, stageH - instructionText.height - 20);
+		}
+
 
 		intro.addChild(overlay);
 		intro.addChild(instructionText);
@@ -733,12 +775,6 @@ function init() {
 		interfaceHolder.addChild(scoreIcon);
 		interfaceHolder.addChild(scoreText);
 
-		buildings.position.set(0, 64);
-		trees.position.set(0, 202);
-		hedges.position.set(0, 0);
-		street.position.set(0, 360);
-		lightpoles.position.set(0, 0);
-		lightpoles.tilePosition.x -= 200;
 
 		bgHolder.addChild(sky_bg);
 		bgHolder.addChild(buildings);
@@ -777,6 +813,40 @@ function init() {
 			t.set(candies[i], {pixi:{x:Utils.random(stageW, stageW * 2), y:Utils.random(50, stageH - 100)}} );
 		}
 
+
+
+
+		if (screenSize === 'mobile') {
+
+			bgHolder.height = stageH;
+			bgHolder.width = stageW;
+			sky_bg.scale.y = 1.2;
+			sky_bg.height = stageH;
+			buildings.position.set(0, 300);
+
+			trees.position.set(0, 420);
+
+			street.height = 278 / 2;
+			street.position.set(0, stageH - street.height);
+
+			hedges.height = 500;
+			hedges.position.set(0, 240);
+
+			lightpoles.height = 500;
+			lightpoles.position.set(0, stageH - lightpoles.height);
+			lightpoles.tilePosition.x -= 200;
+
+		} else {
+
+			buildings.position.set(0, 64);
+			trees.position.set(0, 202);
+			hedges.position.set(0, 0);
+			street.position.set(0, 360);
+			lightpoles.position.set(0, 0);
+			lightpoles.tilePosition.x -= 200;
+
+		}
+
 		main.addChild(bgHolder);
 		main.addChild(candyHolder);
 		main.addChild(airHead);
@@ -798,21 +868,10 @@ function init() {
 		endCtaHolder2.addChild(endCtaBg2);
 		endCtaHolder2.addChild(endCtaText2);
 
-		endCtaHolder1.pivot.set(endCtaHolder1.width / 2, endCtaHolder1.height / 2);
-		endCtaHolder2.pivot.set(endCtaHolder2.width / 2, endCtaHolder2.height / 2);
-
-		endCtaHolder1.position.set(endCtaHolder1.width / 2 + 285, stageH / 2 + 180);
-		endCtaHolder2.position.set(endCtaHolder2.width / 2 + 605, stageH / 2 + 180);
-
 		endCtaHolder1.interactive = true;
 		endCtaHolder1.buttonMode = true;
 		endCtaHolder2.interactive = true;
 		endCtaHolder2.buttonMode = true;
-
-		ahLogoEnd.anchor.set(0.5);
-		ahLogoEnd.position.set(stageW - ahLogo.width / 2 + 60, 220);
-		ahLogoEnd.animationSpeed = 0.3;
-		ahLogoEnd.loop = false;
 
 		cabCatchEnd.anchor.set(0.5)
 		cabCatchEnd.position.set(cabCatch.width/2, cabCatch.height / 2);
@@ -839,12 +898,77 @@ function init() {
 		cabLogoEnd.addChild(cabCandy1End);
 		cabLogoEnd.addChild(cabCandy2End);
 		cabLogoEnd.addChild(cabCandy3End);
-		cabLogoEnd.scale.set(0.42);
-		cabLogoEnd.position.set(stageW / 3 - cabLogoEnd.width / 2 - 10, 26);
 
-		yourScoreText.position.set(stageW / 3 - yourScoreText.width / 2, 168);
+		ahLogoEnd.anchor.set(0.5);
+		ahLogoEnd.animationSpeed = 0.3;
+		ahLogoEnd.loop = false;
 
-		endSubhead.position.set(stageW / 3 - endSubhead.width / 2, 284);
+		if (screenSize === 'desktop') {
+			log('Position Desktop EndFrame');
+			cabLogoEnd.scale.set(0.42);
+			cabLogoEnd.position.set(stageW / 3 - cabLogoEnd.width / 2 - 10, 26);
+			yourScoreText.position.set(stageW / 3 - yourScoreText.width / 2, 168);
+			endSubhead.position.set(stageW / 3 - endSubhead.width / 2, 284);
+			endCtaHolder1.position.set(stageW / 3 - endCtaHolder1.width / 2 - 20, stageH / 2 + 180);
+			endCtaHolder2.position.set(stageW / 3 + endCtaHolder2.width / 2 + 20, stageH / 2 + 180);
+			ahLogoEnd.position.set(stageW - ahLogo.width / 2, 220);
+		} else if ( screenSize === 'tablet' ) {
+			log('Position Tablet EndFrame');
+
+			cabLogoEnd.scale.set(0.42);
+			cabLogoEnd.position.set(stageW / 3 - cabLogoEnd.width / 2 - 10, stageH / 4 - cabLogoEnd.height / 2);
+
+			yourScoreText.style.fontSize = '60px';
+			yourScoreText.style.letterSpacing = 0.25;
+			yourScoreText.position.set(stageW / 3 - yourScoreText.width / 2, stageH / 2 - yourScoreText.height );
+
+			endSubhead.style.fontSize = '28px'
+			endSubhead.position.set(stageW / 3 - endSubhead.width / 2, stageH / 2 + endSubhead.height );
+
+			endCtaHolder1.scale.set(0.75);
+			endCtaHolder2.scale.set(0.75);
+			endCtaHolder1.position.set(stageW / 3 - endCtaHolder1.width / 2 - 10, stageH / 2 + 180);
+			endCtaHolder2.position.set(stageW / 3 + endCtaHolder2.width / 2 + 10, stageH / 2 + 180);
+
+			ahLogoEnd.scale.set(0.60);
+			ahLogoEnd.position.set( stageW - ahLogoEnd.width / 2 + 40, stageH / 2 );
+
+		} else if ( screenSize === 'mobile') {
+			log ('position mobile EndFrame');
+
+			overlayEnd.width = stageW;
+			overlayEnd.height = stageH;
+
+			cabLogoEnd.scale.set(0.42);
+			cabLogoEnd.position.set(stageW / 2 - cabLogoEnd.width / 2 - 20, 60);
+
+			yourScoreText.style.fontSize = '40px';
+			yourScoreText.style.letterSpacing = 0.25;
+			yourScoreText.position.set(stageW / 2 - yourScoreText.width / 2, stageH / 2 - yourScoreText.height * 2 );
+
+			endSubhead.style.fontSize = '28px'
+			endSubhead.position.set(stageW / 2 - endSubhead.width / 2, stageH / 2 - endSubhead.height );
+
+			endCtaHolder1.scale.set(0.55);
+			endCtaHolder2.scale.set(0.55);
+			endCtaHolder1.position.set(stageW / 2 - endCtaHolder1.width / 2 - 10, stageH / 2 + 60);
+			endCtaHolder2.position.set(stageW / 2 + endCtaHolder2.width / 2 + 10, stageH / 2 + 60);
+
+			ahLogoEnd.scale.set(0.60);
+
+			ahLogoEnd.position.set( stageW / 2  , stageH - ahLogoEnd.height / 2 );
+
+
+
+		}
+
+
+
+
+
+
+
+
 
 		endFrame.addChild(overlayEnd);
 		endFrame.addChild(cabLogoEnd);
@@ -919,8 +1043,8 @@ function init() {
 		timerBg.lineStyle(6, 0xFFFFFF, 1);
 		timerIcon.lineStyle(6, 0xFF3300, 1);
 
-		timerBg.arc(stageW - 80, 460, 10, (Math.PI / 180) * 0 , (Math.PI / 180) * 360, false);
-		timerIcon.arc(stageW - 80, 460, 10, (Math.PI / 180) * 0 , (Math.PI / 180) * 180, false);
+		timerBg.arc(stageW - 80, stageH - 40, 10, (Math.PI / 180) * 0 , (Math.PI / 180) * 360, false);
+		timerIcon.arc(stageW - 80, stageH - 40, 10, (Math.PI / 180) * 0 , (Math.PI / 180) * 180, false);
 
 		// -- Hearts
 		heartHolder = new PIXI.Container();
