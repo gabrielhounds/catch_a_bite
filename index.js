@@ -19,11 +19,21 @@ function init() {
 	var Sprites = {};
 	var Text = {};
 
+	var t = TweenMax;
+
+	var tlIntro 	= new TimelineMax({paused:true});
+	var tlOutro 	= new TimelineMax({paused:true});
+	var tlEndOut 	= new TimelineMax({paused:true});
+	var tlGameOver 	= new TimelineMax({paused:true});
+
+
+
 	Text = (function() {
 		var interfaceTextStyle = new PIXI.TextStyle({
+			align : 'center',
 			fontFamily: 'uniform_roundedbold',
 			fontSize: '28px',
-			letterSpacing: -2,
+			letterSpacing: -1,
 			fill: '0xFFFFFF',
 		});
 
@@ -59,124 +69,71 @@ function init() {
 
 	}());
 
-	Interface = (function() {
+	//Interface
 
-		var loadingText, scoreText, timerText, scoreIcon, timerIcon, timerBg;
-		var interfaceHolder, heartHolder, timerHolder, scoreHolder;
-		var timerSectors, timerSectorLength, beginAngle;
-		var heart1, heart2, heart3;
+	var loadingText, scoreText, timerText, scoreIcon, timerIcon, timerBg;
+	var interfaceHolder, heartHolder, timerHolder, scoreHolder;
+	var timerSectors, timerSectorLength, beginAngle;
+	var heart1, heart2, heart3;
 
-		return {
-			scoreText,
-			timerText,
-			scoreIcon,
-			timerIcon,
-			timerBg,
-			interfaceHolder,
-			heartHolder,
-			timerHolder,
-			scoreHolder,
-			timerSectors,
-			timerSectorLength,
-			beginAngle,
-			loadingText,
-			heart1,
-			heart2,
-			heart3
-		}
-	}());
+	// INTRO
+	var ctaBg, ctaText, ctaHolder, overlay, ahLogo, logoTextures, instructionText, cabLogo, cabCatch, cabA, cabBite, cabBg, cabCandy1, cabCandy2, cabCandy3, cabCandy4, intro;
 
+	//MAIN
+	var bgHolder, candyHolder, fgHolder, airheadHolder, hitRect;
+	var sky_bg, buildings, trees, hedges, street, lightpoles;
+	var candy0, candy1, candy2, candy3, candy4, candy5, candy6;
+	var airHead, airBody, leftArm, rightArm, leftLeg, rightLeg, torso, head, pelvis, headTextures;
+	var candies = [];
 
-	Intro = (function() {
-		var ctaBg, ctaText, ctaHolder, overlay, ahLogo, logoTextures, instructionText, cabLogo, cabCatch, cabA, cabBite, cabBg, cabCandy1, cabCandy2, cabCandy3, cabCandy4;
+	//ENDFRAME
+	var endFrame, overlayEnd, endCtaBg1, endCtaBg2, endCtaHolder1, endCtaHolder2, endCtaText1, endCtaText2, ahLogoEnd, yourScoreText, endSubhead;
+	var cabLogoEnd, cabCatchEnd, cabAEnd, cabBiteEnd, cabBgEnd, cabCandy1End, cabCandy2End, cabCandy3End, cabCandy4End;
 
-		return {
-			ctaBg,
-			ctaText,
-			ctaHolder,
-			overlay : overlay,
-			ahLogo,
-			logoTextures,
-			instructionText,
-			cabLogo,
-			cabCatch,
-			cabA,
-			cabBite,
-			cabBg,
-			cabCandy1,
-			cabCandy2,
-			cabCandy3,
-			cabCandy4
-		}
+	//GAME
+	var Application = PIXI.Application,
+	loader 			= PIXI.loader,
+	resources 		= PIXI.loader.resources,
+	Sprite 			= PIXI.Sprite,
+	gameTime 		= 30,
+	elapsedTime 	= 0,
+	timerSectors 	= 30,
+	timerSectorLength = Math.PI * 2 / timerSectors,
+	beginAngle 		= 0 / timerSectors * Math.PI * 2,
+	lives 			= 3,
+	mainBlurAmount 	= 10,
+	topHits 		= 0,
+	bottomHits 		= 0,
+	score 			= 0,
+	flapBoost 		= 0.0,
+	sinkRate 		= 4.0,
+	candySpeed 		= 3,
 
+	skyScrollRate 		= 0.3,
+	buildingScrollRate 	= 0.6,
+	treesScrollRate 	= 0.7,
+	hedgesScrollRate 	= 0.8,
+	streetScrollRate 	= 1.0,
+	fgScrollRate 		= 1.5,
 
-	}());
+	bgSpeedMod 			= 0.0,
+	candySpeedMod 		= 0.0,
 
-	Main = (function() {
-		var bgHolder, candyHolder, fgHolder, airheadHolder, hitRect;
-		var sky_bg, buildings, trees, hedges, street, lightpoles;
-		var candy0, candy1, candy2, candy3, candy4, candy5, candy6;
-		var airHead, airBody, leftArm, rightArm, leftLeg, rightLeg, torso, head, pelvis, headTextures;
+	won, lost,
 
-		return {
-			bgHolder,
-			candyHolder,
-			fgHolder,
-			airheadHolder,
-			hitRect,
-			sky_bg,
-			buildings,
-			trees,
-			hedges,
-			street,
-			lightpoles,
-			candy0,
-			candy1,
-			candy2,
-			candy3,
-			candy4,
-			candy5,
-			candy6,
-			airHead,
-			airBody,
-			leftArm,
-			rightArm,
-			leftLeg,
-			rightLeg,
-			torso,
-			head,
-			pelvis,
-			headTextures
-		}
-	}());
+	playing 		= false,
+	_width 			= window.innerWidth,
+	_height 		= window.innerHeight;
 
-	EndFrame = (function() {
-		var endFrame, overlayEnd, endCtaBg1, endCtaBg2, endCtaHolder1, endCtaHolder2, endCtaText1, endCtaText2, ahLogoEnd, yourScoreText, endSubhead;
-		var cabLogoEnd, cabCatchEnd, cabAEnd, cabBiteEnd, cabBgEnd, cabCandy1End, cabCandy2End, cabCandy3End, cabCandy4End;
+	var ticker 			= new PIXI.ticker.Ticker({ autoStart : false});
+	var introTicker 	= new PIXI.ticker.Ticker({ autoStart : false})
 
-		return {
-			endFrame,
-			overlayEnd,
-			endCtaBg1,
-			endCtaBg2,
-			endCtaHolder1,
-			endCtaHolder2,
-			endCtaText1,
-			endCtaText2,
-			ahLogoEnd,
-			yourScoreText,
-			endSubhead,
-			cabLogoEnd,
-			cabCatchEnd,
-			cabAEnd,
-			cabBiteEnd,
-			cabBgEnd,
-			cabCandy1End,
-			cabCandy2End,
-			cabCandy3End,
-			cabCandy4End
-		}
-	}());
+	ticker.autoStart = false;
+	introTicker.autoStart = false;
+
+	ticker.stop();
+	introTicker.stop();
+
 
 	Sounds = (function() {
 		var bgSound, flapSound, buttonSound, eatSound, loseSound, winSound, overSound;
@@ -191,52 +148,7 @@ function init() {
 		}
 	}());
 
-	Game = (function() {
-		var app,
-		Application = PIXI.Application,
-		loader = PIXI.loader,
-		resources = PIXI.loader.resources,
-		Sprite = PIXI.Sprite,
-		ticker = new PIXI.ticker.Ticker(),
-		introTicker = new PIXI.ticker.Ticker(),
-		gameTime = 30,
-		elapsedTime = 0,
-		timerSectors = 30,
-		timerSectorLength = Math.PI * 2 / timerSectors,
-		beginAngle = 0 / timerSectors * Math.PI * 2,
-		lives = 3,
-		mainBlurAmount = 10,
-		topHits = 0,
-		bottomHits = 0,
-		score = 0,
-		flapBoost = 0.0,
-		sinkRate = 4.0,
-		playing = false,
-		_width = window.innerWidth,
-		_height = window.innerHeight;
-		return {
-			Application : Application,
-			loader : loader,
-			resources : resources,
-			Sprite : Sprite,
-			ticker : ticker,
-			introTicker : introTicker,
-			gameTime : gameTime,
-			elapsedTime : elapsedTime,
-			timerSectors : timerSectors,
-			timerSectorLength : timerSectorLength,
-			beginAngle : beginAngle,
-			lives : lives,
-			mainBlurAmount : mainBlurAmount,
-			topHits : topHits,
-			bottomHits : bottomHits,
-			score : score,
-			flapBoost : flapBoost,
-			sinkRate : sinkRate,
-			_width : _width,
-			_height : _height
-		}
-	}());
+
 
 	Utils = (function(){
 		var getMousePosition = function() {
@@ -291,7 +203,7 @@ function init() {
 
 	var game = $('<div>', {id:'game'}).appendTo('body');
 
-	app = new Game.Application({});
+	app = new Application({width : 1280, height : 500});
 	app.renderer.backgroundColor = 0x0040A3;
 
 	app.renderer.view.width = 1280;
@@ -302,21 +214,368 @@ function init() {
 	var stageW = app.renderer.view.width;
 	var stageH = app.renderer.view.height;
 
-	Interface.loadingText = new PIXI.Text('LOADING      ');
-	Interface.loadingText.style = {fill: 'WHITE', font:'20px uniform_roundedbold'};
-	Interface.loadingText.position.set(stageW / 2 - Interface.loadingText.width / 2, stageH / 2);
-	app.stage.addChild(Interface.loadingText);
+	loadingText = new PIXI.Text('LOADING      ');
+	loadingText.style = {fill: 'WHITE', font:'20px uniform_roundedbold'};
+	loadingText.position.set(stageW / 2 - loadingText.width / 2, stageH / 2);
+	app.stage.addChild(loadingText);
+
+	function setUpReplay() {
+		log('SET REPLAY');
+		endCtaHolder1.on('pointerup', null);
+
+		score = 0;
+		scoreText.setText(score);
+
+		lives = 3;
+		ahLogoEnd.gotoAndStop(0);
+
+		bgSpeedMod 			= 0.0;
+		candySpeedMod 		= 0.0;
+		skyScrollRate 		= 0.3;
+		buildingScrollRate 	= 0.6;
+		treesScrollRate 	= 0.7;
+		hedgesScrollRate 	= 0.8;
+		streetScrollRate 	= 1.0;
+		fgScrollRate 		= 1.5;
+		candySpeed 			= 3.0;
+		gameTime 			= 30;
+		elapsedTime 		= 0;
+		bottomHits 			= 0;
+
+		for ( var i = 0; i < candies.length; i++ ) {
+			t.set(candies[i], {pixi:{x:Utils.random(stageW, stageW * 2), y:Utils.random(50, stageH - 100)}} );
+		}
+
+		t.set([heart1, heart2, heart3], {pixi:{alpha:1}});
+		mainBlur.blur = 0.0;
+		endFrame.position.set(0, stageH);
+
+		playing = true;
+		ticker.start();
+
+		/*tlEndOut.add('begin')
+		.to(cabLogoEnd.children, 0.4, {pixi:{scale:0.5, alpha:0.0}, ease:Power2.easeOut})
+		.to(yourScoreText, 	0.4, {pixi:{y:'-=200', alpha:0.0}, ease:Power3.easeOut}, '-=0.40')
+		.to(endSubhead, 	0.4, {pixi:{y:'-=200', alpha:0.0}, ease:Power3.easeOut}, '-=0.40')
+		.to([endCtaHolder1, endCtaHolder2], 0.4, {pixi:{y:'+=100', alpha:0}, ease:Power3.easeOut}, '-=0.40')
+		.to(ahLogoEnd, 	0.4, {pixi:{y:'+=100', alpha:0}, ease:Power3.easeOut}, '-=0.40')
+		.to(overlayEnd, 0.4, {pixi:{y:'+=100', alpha:0}, ease:Power3.easeOut, onComplete:initReplay}, '-=0.40')
+		.add('end');
+		//endFrame.position.set(0, stageH);
+		//tlEndOut.play();
+
+		function initReplay() {
+			log('INIT REPLAY');
+			endFrame.position.set(0, stageH);
+			//tlEndOut.seek('begin');
+			playing = true;
+			ticker.start();
+		}
+		*/
+	}
+
+
+	function handleDeath() {
+		log('You Died');
+
+		//loseSound.play();
+		ticker.stop();
+		bottomHits = 0;
+		//airHead.y = -airHead.height;
+
+		t.set(airHead, {pixi:{y:-200}});
+
+		if (lives === 3 ) {
+			t.to(heart1, 0.05, {pixi:{alpha:0}, ease:Power3.easeOut, yoyo:true, repeat:4});
+			lives = 2;
+			setTimeout( function() {
+				ticker.start();
+				t.to(airHead, 0.1, {pixi:{alpha:0.1}, ease:Power0.easeNone, yoyo:true, repeat:11, delay:0.0});
+			}, 500);
+		} else if ( lives === 2) {
+			t.to(heart2, 0.05, {pixi:{alpha:0}, ease:Power3.easeOut, yoyo:true, repeat:4});
+			lives = 1;
+			setTimeout( function() {
+				ticker.start();
+				t.to(airHead, 0.1, {pixi:{alpha:0.1}, ease:Power0.easeNone, yoyo:true, repeat:11, delay:0.0});
+				}, 500);
+		} else if ( lives === 1 ) {
+			t.to(heart3, 0.05, {pixi:{alpha:0}, ease:Power3.easeOut, yoyo:true, repeat:4});
+			lives = 0;
+			handleGameOver(false);
+		}
+	}
+
+
+	function handleGameOver( won ) {
+
+		playing = false;
+
+		if (won === true ) {
+			log('you win');
+			endSubhead.setText(' Great job! ' );
+		} else {
+			log('You Lost');
+			endSubhead.setText(' Nice Try! ' );
+		}
+
+		yourScoreText.setText(' Your score: ' + score + ' ');
+		yourScoreText.position.set(stageW / 3 - yourScoreText.width / 2, 168);
+
+		tlGameOver.add('begin')
+		.to(main, 				0.3, {pixi:{blurX:10.0, blurY:10.0}}, '+=1.0')
+		.from(overlayEnd, 		0.4, {pixi:{y:'-=400', alpha:0}, ease:Power3.easeOut})
+		.from(cabCatchEnd, 		0.8, {pixi:{scale:0.3, alpha:0}, ease:Elastic.easeOut})
+		.from(cabAEnd, 			0.8, {pixi:{scale:0.3, alpha:0}, ease:Elastic.easeOut}, '-=0.7')
+		.from(cabBiteEnd, 		0.8, {pixi:{scale:0.3, alpha:0}, ease:Elastic.easeOut}, '-=0.7')
+		.from(cabBgEnd, 		0.2, {pixi:{scale:0,   alpha:0}, ease:Power3.easeOut}, '-=0.7')
+		.from(cabCandy4End, 	0.6, {pixi:{scale:0.5, alpha:0}, ease:Elastic.easeOut}, '-=0.6')
+		.from(cabCandy1End, 	0.6, {pixi:{scale:1.2, alpha:0}, ease:Elastic.easeOut}, '-=0.55')
+		.from(cabCandy2End, 	0.6, {pixi:{scale:1.2, alpha:0}, ease:Elastic.easeOut}, '-=0.55')
+		.from(cabCandy3End, 	0.6, {pixi:{scale:1.2, alpha:0}, ease:Elastic.easeOut}, '-=0.55')
+		.from(yourScoreText, 	0.6, {pixi:{y:'+=40',  alpha:0}, ease:Elastic.easeOut}, '-=0.55')
+		.from(endSubhead, 		0.6, {pixi:{y:'+=40',  alpha:0}, ease:Elastic.easeOut}, '-=0.55')
+		.from(endCtaHolder1, 	0.6, {pixi:{y:'+=40',  alpha:0}, ease:Elastic.easeOut}, '-=0.55')
+		.from(endCtaHolder2, 	0.6, {pixi:{y:'+=40',  alpha:0}, ease:Elastic.easeOut, onComplete:setUpEndCta}, '-=0.55')
+		.from(ahLogoEnd, 		0.6, {pixi:{scale:0.7, alpha:0}, ease:Power3.easeOut}, '+=0.1')
+		.addCallback(function() { ahLogoEnd.play() }, '-=0.65')
+		.add('end');
+
+		function setUpEndCta() {
+			log('end cta');
+
+			endCtaHolder1.on('mouseover', function(e){
+				t.to(endCtaBg1, 0.6, {pixi:{scale:1.2}, ease:Elastic.easeOut});
+				t.to(endCtaText1, 0.2, {pixi:{y:'+=10', alpha:0}, ease:Power3.easeOut});
+				t.set(endCtaText1, {pixi:{y:'-=30'}, delay:0.2})
+				t.to(endCtaText1, 0.6, {pixi:{y:'+=20', alpha:1, scale:1.1}, ease:Elastic.easeOut, delay:0.20});
+			}).on('mouseout', function(e){
+				t.to(endCtaBg1, 0.6, {pixi:{scale:1.0}, ease:Elastic.easeOut});
+				t.to(endCtaText1, 0.6, {pixi:{scale:1.0}, ease:Elastic.easeOut});
+			}).on('pointerup', setUpReplay);
+
+			endCtaHolder2.on('mouseover', function(e){
+				t.to(endCtaBg2, 0.6, {pixi:{scale:1.2}, ease:Elastic.easeOut});
+				t.to(endCtaText2, 0.2, {pixi:{y:'+=10', alpha:0}, ease:Power3.easeOut});
+				t.set(endCtaText2, {pixi:{y:'-=30'}, delay:0.2})
+				t.to(endCtaText2, 0.6, {pixi:{y:'+=20', alpha:1, scale:1.1}, ease:Elastic.easeOut, delay:0.20});
+			}).on('mouseout', function(e){
+				t.to(endCtaBg2, 0.6, {pixi:{scale:1.0}, ease:Elastic.easeOut});
+				t.to(endCtaText2, 0.6, {pixi:{scale:1.0}, ease:Elastic.easeOut});
+			});
+
+		}
+
+		endFrame.position.set(0, 0);
+		tlGameOver.play();
+
+
+	}
+
+
+	function handleFlap() {
+		log('HANDLE FLAP');
+		if (playing === true) {
+			log('FLAP');
+			//flapSound.play();
+			t.to(rightLeg, 	0.3, {pixi:{rotation:20}});
+			t.to(leftLeg, 	0.3, {pixi:{rotation:40}});
+			t.to(rightArm, 	0.3, {pixi:{rotation:60}});
+			t.to(leftArm, 	0.3, {pixi:{rotation:60}});
+			t.to(head, 		0.6, {pixi:{rotation:-10}});
+			t.to([rightLeg,leftLeg, head, rightArm, leftArm, airBody], 0.9, {pixi:{rotation:0}, delay:1.0, ease:Elastic.easeOut});
+			if (airHead.y < stageH / 2 ) {
+				flapBoost += 2.5;
+			} else {
+				flapBoost += 8.5;
+			}
+		}
+	}
+
+	function handleAirHead(delta) {
+
+		airHead.y += sinkRate;
+		airHead.y -= flapBoost;
+
+		if ( flapBoost > 0) {
+			if ( airHead.y < stageH / 3 ) {
+				flapBoost -= 0.35;
+			} else if ( airHead.y < stageH / 2 ) {
+				flapBoost -= 0.25;
+			} else {
+				flapBoost -= 0.10;
+				t.set(head, {pixi:{rotation:0}});
+			}
+		} else {
+			flapBoost = 0;
+		}
+		if (airHead.y + (airHead.height - head.height * 1.1) > stageH ) {
+			sinkRate = 0.0;
+			bottomHits += 1;
+			if ( bottomHits > 20 ) {
+				handleDeath();
+			}
+		} else {
+			sinkRate = 4.0;
+		}
+		if (airHead.y < 0 ) {
+			flapBoost = 0;
+			topHits += 1;
+			handleTopHit();
+		}
+	}
+
+	function bgScroll(delta) {
+		sky_bg.tilePosition.x 		-= skyScrollRate;
+		buildings.tilePosition.x  	-= buildingScrollRate;
+		trees.tilePosition.x 		-= treesScrollRate;
+		hedges.tilePosition.x 		-= hedgesScrollRate;
+		street.tilePosition.x 		-= streetScrollRate;
+		lightpoles.tilePosition.x 	-= fgScrollRate;
+
+		skyScrollRate 				+= bgSpeedMod;
+		buildingScrollRate 			+= bgSpeedMod;
+		treesScrollRate 			+= bgSpeedMod;
+		hedgesScrollRate 			+= bgSpeedMod;
+		streetScrollRate 			+= bgSpeedMod;
+		fgScrollRate 				+= bgSpeedMod;
+		candySpeed 					+= candySpeedMod;
+
+	}
+
+	function candyScroll(delta) {
+		candy5.rotation -= 0.01;
+		candy6.rotation -= 0.005;
+		for ( var i = 0; i < candies.length; i++ ) {
+			candies[i].x -= candySpeed;
+			if (candies[i].x < 0 - candies[i].width) {
+				candies[i].x = stageW + candies[i].width;
+				candies[i].y = Utils.random(50, stageH - 100);
+			}
+			if (Utils.hitTest(candies[i], airHead)) {
+				log('CANDY COLLISION');
+				candies[i].x = stageW + Utils.random(200, 400);
+				candies[i].y = Utils.random(50, stageH - 100);
+				handleScore();
+			}
+		}
+	}
+
+	function handleScore() {
+		head.play();
+		head.onComplete = function() {
+			head.gotoAndStop(0);
+		}
+		score += 1;
+		scoreText.setText(score);
+		bgSpeedMod += 0.0001;
+		candySpeedMod += 0.0003;
+		//eatSound.play();
+	}
+
+	function handleTopHit() {
+		t.to(rightLeg, 	0.10, {pixi:{rotation: 40}});
+		t.to(leftLeg, 	0.10, {pixi:{rotation: 10}});
+		t.to(rightArm, 	0.10, {pixi:{rotation: 90}});
+		t.to(leftArm, 	0.10, {pixi:{rotation:-20}});
+		t.to(airBody, 	0.15, {pixi:{rotation: 20}});
+		t.to([rightLeg,leftLeg, head, rightArm, leftArm, airBody], 0.9, {pixi:{rotation:0}, delay:0.2, ease:Elastic.easeOut});
+	}
+
+	function handleTimer(delta) {
+		gameTime -= (1 / Math.round(ticker.FPS));
+		timerText.setText( Math.ceil(gameTime) );
+		elapsedTime += (1 / Math.round(ticker.FPS));
+
+		timerSectorLength = ((Math.PI / 180) * 360 / timerSectors) * elapsedTime;
+		interfaceHolder.removeChild(timerIcon);
+		timerIcon = new PIXI.Graphics();
+		timerIcon.lineStyle(6, 0xFF3300, 1);
+		timerIcon.arc(stageW - 80, 460, 10, 0 , timerSectorLength, false);
+		interfaceHolder.addChild(timerIcon);
+
+		if (Math.ceil(gameTime)  <= 0 ) {
+			ticker.stop();
+			handleGameOver(true);
+		}
+	}
+
+
+	function setUpGame() {
+		log('SET UP GAME');
+
+		tlOutro.add('begin')
+		.to(main, 				0.6, {pixi:{blurX:0.0, blurY:0.0}, ease:Power2.easeOut})
+		//.to(cabLogo, 			0.4, {pixi:{y:'-=100', alpha:0.0}, ease:Power3.easeOut}, '-=0.55')
+		.to(cabLogo.children, 	0.4, {pixi:{scale:0.5, alpha:0.0}, ease:Power2.easeOut}, '-=0.55')
+		.to(ctaHolder, 			0.4, {pixi:{y:'+=100', alpha:0.0}, ease:Power3.easeOut}, '-=0.40')
+		.to(instructionText, 	0.4, {pixi:{x:'+=300', alpha:0.0}, ease:Power3.easeOut}, '-=0.40')
+		.to(overlay, 			0.4, {pixi:{x:'+=300', alpha:0.0}, ease:Power3.easeOut}, '-=0.40')
+		.to(ahLogo, 			0.4, {pixi:{x:'+=300', alpha:0.0,  scale:0}, ease:Power3.easeOut}, '-=0.40')
+		.addCallback(destroyIntro)
+		.add('end');
+
+		function destroyIntro() {
+			log('Destroy Intro');
+			intro.alpha = 0.0;
+			intro.destroy();
+			ticker.start();
+		}
+
+
+		tlOutro.play();
+
+		playing = true;
+		hitRect.on('pointerup', handleFlap);
+	}
+
+	function setControls() {
+		log('SET CONTROLS');
+	}
+
 
 	function buildStage() {
 		log('BUILD STAGE');
 
+		tlIntro.add('begin')
+		.from(main, 		0.5, {pixi:{alpha:0}}, '+=1.0')
+		.from(cabCatch, 	0.8, {pixi:{scale:0.3, alpha:0}, ease:Elastic.easeOut})
+		.from(cabCandy4, 	0.6, {pixi:{scale:0.5, alpha:0}, ease:Elastic.easeOut}, '-=0.7')
+		.from(cabA, 		0.8, {pixi:{scale:0.3, alpha:0}, ease:Elastic.easeOut}, '-=0.7')
+		.from(cabCandy3, 	0.6, {pixi:{scale:1.2, alpha:0}, ease:Elastic.easeOut}, '-=0.75')
+		.from(cabBite, 		0.8, {pixi:{scale:0.3, alpha:0}, ease:Elastic.easeOut}, '-=0.7')
+		.from(cabCandy2, 	0.6, {pixi:{scale:1.2, alpha:0}, ease:Elastic.easeOut}, '-=0.75')
+		.from(cabBg, 		0.2, {pixi:{scale:0, alpha:0}, ease:Power3.easeOut}, '-=0.7')
+		.from(cabCandy1, 	0.6, {pixi:{scale:1.2, alpha:0}, ease:Elastic.easeOut}, '-=0.75')
+		.from(overlay, 		0.7, {pixi:{x:'+=40', alpha:0}, ease:Elastic.easeOut}, '-=0.55')
+		.from(instructionText, 0.4, {pixi:{y:'+=40', alpha:0},ease:Elastic.easeOut}, '-=0.6')
+		.from(ahLogo, 		0.8, {pixi:{scale:0.7, alpha:0}, ease:Power3.easeOut}, '-=0.2')
+		.addCallback(function() { ahLogo.play() }, '-=0.85')
+		.from(ctaHolder, 	0.6, {pixi:{y:'+=40', alpha:0, scale:0.5}, ease:Elastic.easeOut}, '-=0.6')
+		.add('end');
 
-		//Intro.intro.addChild(Intro.overlay);
-		Intro.intro.addChild(Intro.cabLogo);
 
-		//app.stage.addChild(Intro.overlay);
+		app.stage.addChild(main);
+		app.stage.addChild(intro);
+		app.stage.addChild(endFrame);
 
+		endFrame.position.set(0, stageH);
 
+		ctaHolder.on('mouseover', function(e){
+			t.to(ctaBg, 0.6, {pixi:{scale:1.2}, ease:Elastic.easeOut});
+			t.to(ctaText, 0.2, {pixi:{y:'+=10', alpha:0}, ease:Power3.easeOut});
+			t.set(ctaText, {pixi:{y:'-=30'}, delay:0.2})
+			t.to(ctaText, 0.6, {pixi:{y:'+=20', alpha:1, scale:1.1}, ease:Elastic.easeOut, delay:0.21});
+		}).on('mouseout', function(e){
+			t.to(ctaBg, 0.6, {pixi:{scale:1.0}, ease:Elastic.easeOut});
+			t.to(ctaText, 0.6, {pixi:{scale:1.0}, ease:Elastic.easeOut});
+		});
+
+		ctaHolder.on('pointerup', setUpGame);
+
+		tlIntro.play();
+
+		setControls();
 
 	}
 
@@ -324,184 +583,403 @@ function init() {
 	function setPosition() {
 		log('SET POSITION');
 
+		// -------
+		//  INTRO
+		// -------
 
-		Intro.intro.addChild(Intro.overlay);
-		Intro.overlay.anchor.set(0.0);
+		// - overlay
+		overlay.position.set(stageW - overlay.width, 0);
 
-		Intro.intro.position.set(0, 0);
-		log(Intro.overlay.width);
-		log('HELP '  +  stageW);
+		// - CAB Logo
+		cabCatch.anchor.set(0.5)
+		cabCatch.position.set(cabCatch.width / 2, cabCatch.height / 2);
+		cabA.anchor.set(0.5)
+		cabA.position.set(cabA.width / 2, cabA.height / 2);
+		cabBite.anchor.set(0.5)
+		cabBite.position.set(cabBite.width / 2, cabBite.height / 2);
+		cabBg.anchor.set(0.5)
+		cabBg.position.set(cabBg.width / 2, cabBg.height / 2);
+		cabCandy1.anchor.set(0.5)
+		cabCandy1.position.set(cabBg.width / 2, cabBg.height / 2);
+		cabCandy2.anchor.set(0.5)
+		cabCandy2.position.set(cabBg.width / 2, cabBg.height / 2);
+		cabCandy3.anchor.set(0.5)
+		cabCandy3.position.set(cabBg.width / 2, cabBg.height / 2);
+		cabCandy4.anchor.set(0.5)
+		cabCandy4.position.set(cabBg.width / 2, cabBg.height / 2);
+		cabLogo.addChild(cabCandy4);
+		cabLogo.addChild(cabBg);
+		cabLogo.addChild(cabCatch);
+		cabLogo.addChild(cabA);
+		cabLogo.addChild(cabBite);
+		cabLogo.addChild(cabCandy1);
+		cabLogo.addChild(cabCandy2);
+		cabLogo.addChild(cabCandy3);
+		cabLogo.position.set(stageW / 3 - cabLogo.width / 2 - 20, 20);
 
-		app.stage.addChild(Intro.intro);
+		// - CTA
+		ctaBg.anchor.set(0.5);
+		ctaText.anchor.set(0.5);
+		ctaHolder.pivot.set(ctaHolder.width /2, ctaHolder.height / 2);
+		ctaHolder.position.set( stageW / 3 - ctaHolder.width / 2, stageH / 2 + 160);
+		ctaHolder.interactive = true;
+		ctaHolder.buttonMode = true;
+		ctaHolder.addChild(ctaBg);
+		ctaHolder.addChild(ctaText);
 
-		//Intro.cabLogo.position.set();
-		//Intro.ctaHolder.position.set();
-		//Intro.ahLogo.position.set();
-		//Intro.instructionText.position.set();
+		// - Airheads Logo
+		ahLogo.anchor.set(0.5);
+		ahLogo.position.set(stageW - ahLogo.width / 2 + 60, 160);
+		ahLogo.animationSpeed = 0.3;
+		ahLogo.loop = false;
 
-		// Main
+		// - Instruction Text
+		instructionText.position.set((overlay.x + overlay.width / 2) - instructionText.width / 2, stageH - instructionText.height - 60);
 
-		// EndFrame
+		intro.addChild(overlay);
+		intro.addChild(instructionText);
+		intro.addChild(ahLogo);
+		intro.addChild(ctaHolder);
+		intro.addChild(cabLogo);
 
-		//buildStage();
+		// -------
+		//  MAIN
+		// -------
+
+		// - Interface
+		main.filters = [mainBlur];
+
+		scoreText.position.set(76, stageH - scoreText.height - 26);
+		scoreIcon.anchor.set(0.5);
+		scoreIcon.scale.set(0.8);
+		scoreIcon.position.set(42, stageH - ((scoreIcon.height / 2) + 20));
+
+		timerText.position.set(stageW - timerText.width - 20, stageH - timerText.height - 26);
+
+		heart1.position.set(0, 0);
+		heart2.position.set(40, 0);
+		heart3.position.set(80, 0);
+
+		heartHolder.addChild(heart1);
+		heartHolder.addChild(heart2);
+		heartHolder.addChild(heart3);
+		heartHolder.position.set(30, 20);
+
+		interfaceHolder.addChild(heartHolder);
+		interfaceHolder.addChild(timerBg);
+		interfaceHolder.addChild(timerIcon);
+		interfaceHolder.addChild(timerText);
+		interfaceHolder.addChild(scoreIcon);
+		interfaceHolder.addChild(scoreText);
+
+		buildings.position.set(0, 64);
+		trees.position.set(0, 202);
+		hedges.position.set(0, 0);
+		street.position.set(0, 360);
+		lightpoles.position.set(0, 0);
+
+		bgHolder.addChild(sky_bg);
+		bgHolder.addChild(buildings);
+		bgHolder.addChild(trees);
+		bgHolder.addChild(hedges);
+		bgHolder.addChild(street);
+
+		airBody.addChild(leftArm);
+		airBody.addChild(rightLeg);
+		airBody.addChild(leftLeg);
+		airBody.addChild(torso);
+		airBody.addChild(rightArm);
+		airHead.addChild(airBody);
+		airHead.addChild(head);
+		airHead.position.set(stageW / 3, 200);
+
+		candy0.anchor.set(0.5);
+		candy1.anchor.set(0.5);
+		candy2.anchor.set(0.5);
+		candy3.anchor.set(0.5);
+		candy4.anchor.set(0.5);
+		candy5.anchor.set(0.5);
+		candy6.anchor.set(0.5);
+
+		candyHolder.addChild(candy0);
+		candyHolder.addChild(candy1);
+		candyHolder.addChild(candy2);
+		candyHolder.addChild(candy3);
+		candyHolder.addChild(candy4);
+		candyHolder.addChild(candy5);
+		candyHolder.addChild(candy6);
+
+		candies = [candy0, candy1, candy2, candy3, candy4, candy5, candy6];
+
+		main.addChild(bgHolder);
+		main.addChild(candyHolder);
+		main.addChild(airHead);
+		main.addChild(lightpoles);
+		main.addChild(interfaceHolder);
+		main.addChild(hitRect);
+
+		// -------
+		//  END FRAME
+		// -------
+
+		endCtaBg1.anchor.set(0.5);
+		endCtaBg2.anchor.set(0.5);
+		endCtaText1.anchor.set(0.5);
+		endCtaText2.anchor.set(0.5);
+
+		endCtaHolder1.addChild(endCtaBg1);
+		endCtaHolder1.addChild(endCtaText1);
+		endCtaHolder2.addChild(endCtaBg2);
+		endCtaHolder2.addChild(endCtaText2);
+
+		endCtaHolder1.pivot.set(endCtaHolder1.width / 2, endCtaHolder1.height / 2);
+		endCtaHolder2.pivot.set(endCtaHolder2.width / 2, endCtaHolder2.height / 2);
+
+		endCtaHolder1.position.set(endCtaHolder1.width / 2 + 285, stageH / 2 + 180);
+		endCtaHolder2.position.set(endCtaHolder2.width / 2 + 605, stageH / 2 + 180);
+
+		endCtaHolder1.interactive = true;
+		endCtaHolder1.buttonMode = true;
+		endCtaHolder2.interactive = true;
+		endCtaHolder2.buttonMode = true;
+
+		ahLogoEnd.anchor.set(0.5);
+		ahLogoEnd.position.set(stageW - ahLogo.width / 2 + 60, 220);
+		ahLogoEnd.animationSpeed = 0.3;
+		ahLogoEnd.loop = false;
+
+		cabCatchEnd.anchor.set(0.5)
+		cabCatchEnd.position.set(cabCatch.width/2, cabCatch.height / 2);
+		cabAEnd.anchor.set(0.5)
+		cabAEnd.position.set(cabA.width/2, cabA.height / 2);
+		cabBiteEnd.anchor.set(0.5)
+		cabBiteEnd.position.set(cabBite.width/2, cabBite.height / 2);
+		cabBgEnd.anchor.set(0.5)
+		cabBgEnd.position.set(cabBg.width/2, cabBg.height / 2);
+		cabCandy1End.anchor.set(0.5)
+		cabCandy1End.position.set(cabBg.width/2, cabBg.height / 2);
+		cabCandy2End.anchor.set(0.5)
+		cabCandy2End.position.set(cabBg.width/2, cabBg.height / 2);
+		cabCandy3End.anchor.set(0.5)
+		cabCandy3End.position.set(cabBg.width/2, cabBg.height / 2);
+		cabCandy4End.anchor.set(0.5)
+		cabCandy4End.position.set(cabBg.width/2, cabBg.height / 2);
+
+		cabLogoEnd.addChild(cabCandy4End);
+		cabLogoEnd.addChild(cabBgEnd);
+		cabLogoEnd.addChild(cabCatchEnd);
+		cabLogoEnd.addChild(cabAEnd);
+		cabLogoEnd.addChild(cabBiteEnd);
+		cabLogoEnd.addChild(cabCandy1End);
+		cabLogoEnd.addChild(cabCandy2End);
+		cabLogoEnd.addChild(cabCandy3End);
+		cabLogoEnd.scale.set(0.42);
+		cabLogoEnd.position.set(stageW / 3 - cabLogoEnd.width / 2 - 10, 26);
+
+		yourScoreText.position.set(stageW / 3 - yourScoreText.width / 2, 168);
+
+		endSubhead.position.set(stageW / 3 - endSubhead.width / 2, 284);
+
+
+		endFrame.addChild(overlayEnd);
+		endFrame.addChild(cabLogoEnd);
+		endFrame.addChild(endSubhead);
+		endFrame.addChild(endCtaHolder1);
+		endFrame.addChild(endCtaHolder2);
+		endFrame.addChild(ahLogoEnd);
+		endFrame.addChild(yourScoreText);
+
+
+
+
+
+		buildStage();
 	}
 
 	function loadProgressHandler() {
-		Interface.loadingText.setText( 'LOADING ' + Math.round(Game.loader.progress) + '%');
+		loadingText.setText( 'LOADING ' + Math.round(loader.progress) + '%');
 	}
 
 	function setUp() {
 		log('SETUP')
+		t.to(loadingText, 0.3, {pixi:{alpha:0, y:'+=10'}, ease:Power3.easeOut, delay:0.5});
+		// Filters
+		mainBlur = new PIXI.filters.BlurFilter();
+		mainBlur.blur = 10;
+		mainBlur.quality = 4;
 
 		//Textures
-		Sprites.logoTextures = [Game.resources['logo00.png'].texture, Game.resources['logo01.png'].texture, Game.resources['logo02.png'].texture, Game.resources['logo03.png'].texture, Game.resources['logo04.png'].texture, Game.resources['logo05.png'].texture, Game.resources['logo06.png'].texture, Game.resources['logo07.png'].texture, Game.resources['logo08.png'].texture, Game.resources['logo09.png'].texture, Game.resources['logo10.png'].texture, Game.resources['logo11.png'].texture, Game.resources['logo12.png'].texture ];
+		logoTextures = [resources['logo00.png'].texture, resources['logo01.png'].texture, resources['logo02.png'].texture, resources['logo03.png'].texture, resources['logo04.png'].texture, resources['logo05.png'].texture, resources['logo06.png'].texture, resources['logo07.png'].texture, resources['logo08.png'].texture, resources['logo09.png'].texture, resources['logo10.png'].texture, resources['logo11.png'].texture, resources['logo12.png'].texture ];
 
-		Sprites.headTextures = [Game.resources['ah_head_00.png'].texture, Game.resources['ah_head_01.png'].texture, Game.resources['ah_head_02.png'].texture, Game.resources['ah_head_02.png'].texture, Game.resources['ah_head_02.png'].texture, Game.resources['ah_head_01.png'].texture, Game.resources['ah_head_00.png'].texture];
+		headTextures = [resources['ah_head_00.png'].texture, resources['ah_head_01.png'].texture, resources['ah_head_02.png'].texture, resources['ah_head_02.png'].texture, resources['ah_head_02.png'].texture, resources['ah_head_01.png'].texture, resources['ah_head_00.png'].texture];
 
 		// Intro
-		Intro.intro 		= new PIXI.Container();
-		Intro.cabLogo 		= new PIXI.Container();
-		Intro.ctaHolder 	= new PIXI.Container();
-		Intro.ahLogo  		= new PIXI.extras.AnimatedSprite(Sprites.logoTextures);
-		Intro.cabCatch 		= new PIXI.Sprite(Game.resources['cab_catch.png'].texture);
-		Intro.cabA 			= new PIXI.Sprite(Game.resources['cab_a.png'].texture);
-		Intro.cabBite 		= new PIXI.Sprite(Game.resources['cab_bite.png'].texture);
-		Intro.cabBg 		= new PIXI.Sprite(Game.resources['cab_bg.png'].texture);
-		Intro.cabCandy1 	= new PIXI.Sprite(Game.resources['cab_candy1.png'].texture);
-		Intro.cabCandy2 	= new PIXI.Sprite(Game.resources['cab_candy2.png'].texture);
-		Intro.cabCandy3		= new PIXI.Sprite(Game.resources['cab_candy3.png'].texture);
-		Intro.cabCandy4 	= new PIXI.Sprite(Game.resources['cab_candy4.png'].texture);
-		Intro.ctaBg 		= new PIXI.Sprite(Game.resources['cta_bg.png'].texture);
-		Intro.ctaText 		= new PIXI.Text(' Play Now ');
-		Intro.overlay 		= new PIXI.Sprite(Game.resources['introOverlay.png'].texture);
-		Intro.instructionText = new PIXI.Text(' Keep clicking to catch \n all the Airheads! ');
+		intro 		= new PIXI.Container({width: stageW, height: stageH});
+		cabLogo 		= new PIXI.Container();
+		ctaHolder 	= new PIXI.Container();
+		ahLogo  		= new PIXI.extras.AnimatedSprite(logoTextures);
+		cabCatch 		= new PIXI.Sprite(resources['cab_catch.png'].texture);
+		cabA 			= new PIXI.Sprite(resources['cab_a.png'].texture);
+		cabBite 		= new PIXI.Sprite(resources['cab_bite.png'].texture);
+		cabBg 		= new PIXI.Sprite(resources['cab_bg.png'].texture);
+		cabCandy1 	= new PIXI.Sprite(resources['cab_candy1.png'].texture);
+		cabCandy2 	= new PIXI.Sprite(resources['cab_candy2.png'].texture);
+		cabCandy3		= new PIXI.Sprite(resources['cab_candy3.png'].texture);
+		cabCandy4 	= new PIXI.Sprite(resources['cab_candy4.png'].texture);
+		ctaBg 		= new PIXI.Sprite(resources['cta_bg.png'].texture);
+		ctaText 		= new PIXI.Text(' Play Now ');
+		overlay 		= new PIXI.Sprite(resources['overlayBg_@2x.png'].texture);
 
-		Intro.ctaText.style 		= Text.ctaTextStyle;
-		Intro.instructionText.style = Text.interfaceTextStyle;
+
+		instructionText = new PIXI.Text(' Keep clicking to catch \n all the Airheads! ');
+
+		ctaText.style 		= Text.ctaTextStyle;
+		instructionText.style = Text.interfaceTextStyle;
 
 		// Main Game
-		Main.main 				= new PIXI.Container();
+		main 				= new PIXI.Container();
+		interfaceHolder 	= new PIXI.Container();
 
 		// - interface
 		// -- score
-		Interface.scoreText 	= new PIXI.Text();
-		Interface.scoreIcon 	= new PIXI.Sprite(Game.resources['candy_00.png'].texture);
-		Interface.scoreText.style = Text.interfaceTextStyle;
+		scoreText 	= new PIXI.Text('00');
+		scoreIcon 	= new PIXI.Sprite(resources['candy_00.png'].texture);
+		scoreText.style = Text.interfaceTextStyle;
 
 		// -- Timer
-		Interface.timerSectors 	= 30;
-		Interface.timerSectorLength = ((Math.PI / 180) * 360/ Interface.timerSectors) * 15;
-		Interface.beginAngle 	= 0 / Interface.timerSectors * Math.PI * 2;
+		timerSectors 	= 30;
+		timerSectorLength = ((Math.PI / 180) * 360/ timerSectors) * 15;
+		beginAngle 	= 0 / timerSectors * Math.PI * 2;
 
-		Interface.timerText			= new PIXI.Text('00');
-		Interface.timerBg 			= new PIXI.Graphics();
-		Interface.timerIcon 		= new PIXI.Graphics();
-		Interface.timerText.style 	= Text.interfaceTextStyle;
+		timerText			= new PIXI.Text('00');
+		timerBg 			= new PIXI.Graphics();
+		timerIcon 			= new PIXI.Graphics();
+		timerText.style 	= Text.interfaceTextStyle;
+
+		timerBg.lineStyle(6, 0xFFFFFF, 1);
+		timerIcon.lineStyle(6, 0xFF3300, 1);
+
+		timerBg.arc(stageW - 80, 460, 10, (Math.PI / 180) * 0 , (Math.PI / 180) * 360, false);
+		timerIcon.arc(stageW - 80, 460, 10, (Math.PI / 180) * 0 , (Math.PI / 180) * 180, false);
 
 		// -- Hearts
-		Interface.heartHolder 	= new PIXI.Container();
-		Interface.heart1 		= new PIXI.Sprite(Game.resources['heart.png'].texture);
-		Interface.heart2 		= new PIXI.Sprite(Game.resources['heart.png'].texture);
-		Interface.heart3 		= new PIXI.Sprite(Game.resources['heart.png'].texture);
+		heartHolder = new PIXI.Container();
+		heart1 		= new PIXI.Sprite(resources['heart.png'].texture);
+		heart2 		= new PIXI.Sprite(resources['heart.png'].texture);
+		heart3 		= new PIXI.Sprite(resources['heart.png'].texture);
 
-		Main.hitRect = new PIXI.Graphics();
-		Main.hitRect.beginFill(0xFF3300);
-		Main.hitRect.drawRect(0, 0, stageW, stageH);
-		Main.hitRect.endFill();
-		Main.hitRect.alpha = 0.0;
-		Main.hitRect.interactive = true;
-		Main.hitRect.buttonMode = true;
-		Main.hitRect.hitArea = new PIXI.Rectangle(0, 0, stageW, stageH);
+		hitRect = new PIXI.Graphics();
+		hitRect.beginFill(0xFF3300);
+		hitRect.drawRect(0, 0, stageW, stageH);
+		hitRect.endFill();
+		hitRect.alpha = 0.0;
+		hitRect.interactive = true;
+		hitRect.buttonMode = true;
+		hitRect.hitArea = new PIXI.Rectangle(0, 0, stageW, stageH);
 
 		// - BackGround
-		Main.bgHolder 		= new PIXI.Container();
-		Main.sky_bg 		= new PIXI.extras.TilingSprite(Game.resources['sky_bg_@2x.jpg'].texture, stageW, stageH);
-		Main.buildings 		= new PIXI.extras.TilingSprite(Game.resources['buildings_@2x.png'].texture, stageW, 490 / 2);
-		Main.trees 			= new PIXI.extras.TilingSprite(Game.resources['trees_@2x.png'].texture, stageW, 235 / 2);
-		Main.hedges 		= new PIXI.extras.TilingSprite(Game.resources['hedge_@2x.png'].texture, stageW, stageH);
-		Main.street 		= new PIXI.extras.TilingSprite(Game.resources['road_@2x.jpg'].texture, stageW, 278 / 2);
-		Main.lightpoles 	= new PIXI.extras.TilingSprite(Game.resources['lightpost_foreground_@2x.png'].texture, 3600 / 2, stageH);
+		bgHolder 		= new PIXI.Container();
+		sky_bg 		= new PIXI.extras.TilingSprite(resources['sky_bg_@2x.jpg'].texture, stageW, stageH);
+		buildings 		= new PIXI.extras.TilingSprite(resources['buildings_@2x.png'].texture, stageW, 490 / 2);
+		trees 			= new PIXI.extras.TilingSprite(resources['trees_@2x.png'].texture, stageW, 235 / 2);
+		hedges 		= new PIXI.extras.TilingSprite(resources['hedge_@2x.png'].texture, stageW, stageH);
+		street 		= new PIXI.extras.TilingSprite(resources['road_@2x.jpg'].texture, stageW, 278 / 2);
+		lightpoles 	= new PIXI.extras.TilingSprite(resources['lightpost_foreground_@2x.png'].texture, 3600 / 2, stageH);
 
 		// - AIRHEAD
-		Main.airHead 		= new PIXI.Container();
+		airHead 		= new PIXI.Container();
 
 		// -- Head
-		Main.head 			= new PIXI.extras.AnimatedSprite(Sprites.headTextures);
-		Main.head.pivot.set(55, 178);
-		Main.head.position.set(0, 0);
-		Main.head.loop = false;
-		Main.head.animationSpeed = 0.6;
+		head 			= new PIXI.extras.AnimatedSprite(headTextures);
+		head.pivot.set(55, 178);
+		head.position.set(0, 0);
+		head.loop = false;
+		head.animationSpeed = 0.6;
 
 		// -- Body
-		Main.airBody 		= new PIXI.Container();
-		Main.torso 			= new PIXI.Sprite(Game.resources['ah_body.png'].texture);
-		Main.leftLeg 		= new PIXI.Sprite(Game.resources['ah_leftLeg.png'].texture);
-		Main.rightLeg 		= new PIXI.Sprite(Game.resources['ah_rightLeg.png'].texture);
-		Main.rightArm 		= new PIXI.Sprite(Game.resources['ah_rightArm.png'].texture);
-		Main.leftArm 		= new PIXI.Sprite(Game.resources['ah_leftArm.png'].texture);
+		airBody 		= new PIXI.Container();
+		torso 			= new PIXI.Sprite(resources['ah_body.png'].texture);
+		leftLeg 		= new PIXI.Sprite(resources['ah_leftLeg.png'].texture);
+		rightLeg 		= new PIXI.Sprite(resources['ah_rightLeg.png'].texture);
+		rightArm 		= new PIXI.Sprite(resources['ah_rightArm.png'].texture);
+		leftArm 		= new PIXI.Sprite(resources['ah_leftArm.png'].texture);
 
-		Main.rightArm.pivot.set(6, 4);
-		Main.rightArm.position.set(43-55+6, 181-178+4);
-		Main.rightLeg.pivot.set(22, 0);
-		Main.rightLeg.position.set(27-55+22, 210-178+0);
-		Main.leftLeg.pivot.set(8, 4);
-		Main.leftLeg.position.set(48-55+8, 207-178+4);
-		Main.torso.pivot.set(16, 6);
-		Main.torso.position.set(40-55+16, 175-178+6);
-		Main.leftArm.pivot.set(0, 6);
-		Main.leftArm.position.set(62-55+0, 180-178+6);
+		rightArm.pivot.set(6, 4);
+		rightArm.position.set(43-55+6, 181-178+4);
+		rightLeg.pivot.set(22, 0);
+		rightLeg.position.set(27-55+22, 210-178+0);
+		leftLeg.pivot.set(8, 4);
+		leftLeg.position.set(48-55+8, 207-178+4);
+		torso.pivot.set(16, 6);
+		torso.position.set(40-55+16, 175-178+6);
+		leftArm.pivot.set(0, 6);
+		leftArm.position.set(62-55+0, 180-178+6);
 
 		// - Candy
-		Main.candyHolder 		= new PIXI.Container();
-		Main.candy0 			= new PIXI.Sprite(Game.resources['candy_00.png'].texture);
-		Main.candy1 			= new PIXI.Sprite(Game.resources['candy_01.png'].texture);
-		Main.candy2 			= new PIXI.Sprite(Game.resources['candy_02.png'].texture);
-		Main.candy3 			= new PIXI.Sprite(Game.resources['candy_03.png'].texture);
-		Main.candy4 			= new PIXI.Sprite(Game.resources['candy_04.png'].texture);
-		Main.candy5 			= new PIXI.Sprite(Game.resources['candy_05.png'].texture);
-		Main.candy6 			= new PIXI.Sprite(Game.resources['candy_06.png'].texture);
+		candyHolder 	= new PIXI.Container();
+		candy0 			= new PIXI.Sprite(resources['candy_00.png'].texture);
+		candy1 			= new PIXI.Sprite(resources['candy_01.png'].texture);
+		candy2 			= new PIXI.Sprite(resources['candy_02.png'].texture);
+		candy3 			= new PIXI.Sprite(resources['candy_03.png'].texture);
+		candy4 			= new PIXI.Sprite(resources['candy_04.png'].texture);
+		candy5 			= new PIXI.Sprite(resources['candy_05.png'].texture);
+		candy6 			= new PIXI.Sprite(resources['candy_06.png'].texture);
 
 		// Endframe
-		EndFrame.endFrame 		= new PIXI.Container();
-		EndFrame.yourScoreText 	= new PIXI.Text('Your score: 0');
-		EndFrame.endSubhead 	= new PIXI.Text(' Great job! ' );
-		EndFrame.cabCatchEnd  	= new PIXI.Sprite(Game.resources['cab_catch.png'].texture);
-		EndFrame.cabAEnd 	 	= new PIXI.Sprite(Game.resources['cab_a.png'].texture);
-		EndFrame.cabBiteEnd   	= new PIXI.Sprite(Game.resources['cab_bite.png'].texture);
-		EndFrame.cabBgEnd 	 	= new PIXI.Sprite(Game.resources['cab_bg.png'].texture);
-		EndFrame.cabCandy1End 	= new PIXI.Sprite(Game.resources['cab_candy1.png'].texture);
-		EndFrame.cabCandy2End 	= new PIXI.Sprite(Game.resources['cab_candy2.png'].texture);
-		EndFrame.cabCandy3End	= new PIXI.Sprite(Game.resources['cab_candy3.png'].texture);
-		EndFrame.cabCandy4End 	= new PIXI.Sprite(Game.resources['cab_candy4.png'].texture);
-		EndFrame.endCtaBg1 		= new PIXI.Sprite(Game.resources['cta_bg.png'].texture);
-		EndFrame.endCtaBg2 		= new PIXI.Sprite(Game.resources['cta_bg.png'].texture);
-		EndFrame.endCtaText1 	= new PIXI.Text(' Play Again? ');
-		EndFrame.endCtaText2 	= new PIXI.Text(' Find Near You ');
-		EndFrame.ahLogoEnd 		= new PIXI.extras.AnimatedSprite(Sprites.logoTextures);
-		EndFrame.overlayEnd 	= new PIXI.Sprite(Game.resources['endOverlay.png'].texture);
+		endFrame 		= new PIXI.Container();
+		endCtaHolder1	= new PIXI.Container();
+		endCtaHolder2	= new PIXI.Container();
+		cabLogoEnd 		= new PIXI.Container();
 
-		EndFrame.yourScoreText.style 	= Text.yourScoreTextStyle;
-		EndFrame.endSubhead.style 		= Text.subHeadTextStyle;
-		EndFrame.endCtaText1.style 		= Text.ctaTextStyle;
-		EndFrame.endCtaText2.style 		= Text.ctaTextStyle;
+		yourScoreText 	= new PIXI.Text('Your score: 0 ');
+		endSubhead 	= new PIXI.Text(' Great job! ' );
+		cabCatchEnd  	= new PIXI.Sprite(resources['cab_catch.png'].texture);
+		cabAEnd 	 	= new PIXI.Sprite(resources['cab_a.png'].texture);
+		cabBiteEnd   	= new PIXI.Sprite(resources['cab_bite.png'].texture);
+		cabBgEnd 	 	= new PIXI.Sprite(resources['cab_bg.png'].texture);
+		cabCandy1End 	= new PIXI.Sprite(resources['cab_candy1.png'].texture);
+		cabCandy2End 	= new PIXI.Sprite(resources['cab_candy2.png'].texture);
+		cabCandy3End	= new PIXI.Sprite(resources['cab_candy3.png'].texture);
+		cabCandy4End 	= new PIXI.Sprite(resources['cab_candy4.png'].texture);
+		endCtaBg1 		= new PIXI.Sprite(resources['cta_bg.png'].texture);
+		endCtaBg2 		= new PIXI.Sprite(resources['cta_bg.png'].texture);
+		endCtaText1 	= new PIXI.Text(' Play Again? ');
+		endCtaText2 	= new PIXI.Text(' Find Near You ');
+		ahLogoEnd 		= new PIXI.extras.AnimatedSprite(logoTextures);
+		overlayEnd 	= new PIXI.Sprite(resources['endOverlay.png'].texture);
+
+		yourScoreText.style 	= Text.yourScoreTextStyle;
+		endSubhead.style 		= Text.subHeadTextStyle;
+		endCtaText1.style 		= Text.ctaTextStyle;
+		endCtaText2.style 		= Text.ctaTextStyle;
 
 		setPosition();
 	}
 
-	Game.loader.add([
-		'buildings_@2x.png', 'hedge_@2x.png', 'lightpost_foreground_@2x.png', 'road_@2x.jpg', 'sky_bg_@2x.jpg', 'trees_@2x.png', 'introOverlay.png', 'ah_body.png', 'ah_head_00.png', 'ah_head_01.png', 'ah_head_02.png', 'ah_leftArm.png', 'ah_leftLeg.png', 'ah_pelvis.png', 'ah_rightArm.png', 'ah_rightLeg.png', 'candy_00.png', 'candy_01.png', 'candy_02.png', 'candy_03.png', 'candy_04.png', 'candy_05.png', 'candy_06.png', 'heart.png', 'cta_bg.png', 'logo00.png', 'logo01.png', 'logo02.png', 'logo03.png', 'logo04.png', 'logo05.png', 'logo06.png', 'logo07.png', 'logo08.png', 'logo09.png', 'logo10.png', 'logo11.png', 'logo12.png', 'cab_catch.png', 'cab_a.png', 'cab_bite.png', 'cab_bg.png', 'cab_candy1.png', 'cab_candy2.png', 'cab_candy3.png', 'cab_candy4.png', 'endOverlay.png',
+	loader.add([
+		'buildings_@2x.png', 'hedge_@2x.png', 'lightpost_foreground_@2x.png', 'road_@2x.jpg', 'sky_bg_@2x.jpg', 'trees_@2x.png', 'overlayBg_@2x.png', 'ah_body.png', 'ah_head_00.png', 'ah_head_01.png', 'ah_head_02.png', 'ah_leftArm.png', 'ah_leftLeg.png', 'ah_pelvis.png', 'ah_rightArm.png', 'ah_rightLeg.png', 'candy_00.png', 'candy_01.png', 'candy_02.png', 'candy_03.png', 'candy_04.png', 'candy_05.png', 'candy_06.png', 'heart.png', 'cta_bg.png', 'logo00.png', 'logo01.png', 'logo02.png', 'logo03.png', 'logo04.png', 'logo05.png', 'logo06.png', 'logo07.png', 'logo08.png', 'logo09.png', 'logo10.png', 'logo11.png', 'logo12.png', 'cab_catch.png', 'cab_a.png', 'cab_bite.png', 'cab_bg.png', 'cab_candy1.png', 'cab_candy2.png', 'cab_candy3.png', 'cab_candy4.png', 'endOverlay.png',
 	]).on('progress', loadProgressHandler).load(setUp);
 
+	ticker.add( function(delta){
+
+		//log(delta);
 
 
 
+		handleTimer(delta);
+
+		bgScroll(delta);
+		handleAirHead(delta);
+		candyScroll(delta);
+
+		//handleTimerIcon(elapsedTime);
 
 
 
-	log(Utils.random(21, 500));
-	log(Game._width);
-	log(Game.sinkRate);
-	log(Main);
+	})
+
+
+
 
 
 
