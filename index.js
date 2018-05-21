@@ -966,17 +966,9 @@ function init() {
 			cabLogoEnd.position.set(stageW / 3 - cabLogoEnd.width / 2 - 10, 26);
 			yourScoreText.position.set(stageW / 3 - yourScoreText.width / 2, 168);
 			endSubhead.position.set(stageW / 3 - endSubhead.width / 2, 284);
-
-
 			endCtaHolder1.position.set(stageW / 3 , stageH / 2 + 180);
-
 			endCtaHolder2.position.set( (stageW / 2 +  stageW / 5) + endCtaHolder2.width / 2, stageH / 2 + 180);
-
-
-
 			ahLogoEnd.position.set(stageW - ahLogo.width / 2, 220);
-
-
 		} else if ( screenSize === 'tablet' ) {
 			//log('Position Tablet EndFrame');
 
@@ -992,8 +984,13 @@ function init() {
 
 			endCtaHolder1.scale.set(0.75);
 			endCtaHolder2.scale.set(0.75);
-			endCtaHolder1.position.set(stageW / 3 - endCtaHolder1.width / 2 - 10, stageH / 2 + 180);
-			endCtaHolder2.position.set(stageW / 3 + endCtaHolder2.width / 2 + 10, stageH / 2 + 180);
+
+			//endCtaHolder1.position.set(stageW / 3 - endCtaHolder1.width / 2 - 10, stageH / 2 + 180);
+			//endCtaHolder2.position.set(stageW / 3 + endCtaHolder2.width / 2 + 10, stageH / 2 + 180);
+
+			endCtaHolder1.position.set(stageW / 3 , stageH / 2 + 180);
+
+			endCtaHolder2.position.set( (stageW / 2 +  stageW / 5) + endCtaHolder2.width / 2, stageH / 2 + 180);
 
 			ahLogoEnd.scale.set(0.60);
 			ahLogoEnd.position.set( stageW - ahLogoEnd.width / 2 + 40, stageH / 2 );
