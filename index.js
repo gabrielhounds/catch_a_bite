@@ -61,10 +61,10 @@ function init() {
 		});
 
 		return {
-			interfaceTextStyle : interfaceTextStyle,
-			ctaTextStyle : ctaTextStyle,
-			subHeadTextStyle : subHeadTextStyle,
-			yourScoreTextStyle : yourScoreTextStyle,
+			interfaceTextStyle 	: interfaceTextStyle,
+			ctaTextStyle 		: ctaTextStyle,
+			subHeadTextStyle 	: subHeadTextStyle,
+			yourScoreTextStyle 	: yourScoreTextStyle,
 		}
 
 	}());
@@ -92,7 +92,6 @@ function init() {
 
 	//Sounds
 	var bgSound, flapSound, buttonSound, eatSound, loseSound, winSound, overSound;
-
 
 	//GAME
 	var Application = PIXI.Application,
@@ -273,36 +272,38 @@ function init() {
 
 		endCtaHolder1.on('pointerup', null);
 
-		score = 0;
-		scoreText.setText(score);
+		if (playing === false) {
+			score = 0;
+			scoreText.setText(score);
+			lives = 3;
+			ahLogoEnd.gotoAndStop(0);
+			bgSpeedMod 			= 0.0;
+			candySpeedMod 		= 0.0;
+			skyScrollRate 		= 0.3;
+			buildingScrollRate 	= 0.6;
+			treesScrollRate 	= 0.7;
+			hedgesScrollRate 	= 0.8;
+			streetScrollRate 	= 1.0;
+			fgScrollRate 		= 1.5;
+			candySpeed 			= 3.0;
+			gameTime 			= 30;
+			elapsedTime 		= 0;
+			bottomHits 			= 0;
 
-		lives = 3;
-		ahLogoEnd.gotoAndStop(0);
+			for ( var i = 0; i < candies.length; i++ ) {
+				t.set(candies[i], {pixi:{x:Utils.random(stageW, stageW * 2), y:Utils.random(50, stageH - 100)}} );
+			}
 
-		bgSpeedMod 			= 0.0;
-		candySpeedMod 		= 0.0;
-		skyScrollRate 		= 0.3;
-		buildingScrollRate 	= 0.6;
-		treesScrollRate 	= 0.7;
-		hedgesScrollRate 	= 0.8;
-		streetScrollRate 	= 1.0;
-		fgScrollRate 		= 1.5;
-		candySpeed 			= 3.0;
-		gameTime 			= 30;
-		elapsedTime 		= 0;
-		bottomHits 			= 0;
-
-		for ( var i = 0; i < candies.length; i++ ) {
-			t.set(candies[i], {pixi:{x:Utils.random(stageW, stageW * 2), y:Utils.random(50, stageH - 100)}} );
+			t.set([heart1, heart2, heart3], {pixi:{alpha:1}});
+			mainBlur.blur = 0.0;
+			endFrame.position.set(0, stageH);
+			setTimeout( function() { bgSound.play(); }, 500);
+			t.to(bgSound, 0.5, {voluem:0.5});
+			playing = true;
+			ticker.start();
 		}
 
-		t.set([heart1, heart2, heart3], {pixi:{alpha:1}});
-		mainBlur.blur = 0.0;
-		endFrame.position.set(0, stageH);
-		setTimeout( function() { bgSound.play(); }, 500);
-		t.to(bgSound, 0.5, {voluem:0.5});
-		playing = true;
-		ticker.start();
+
 
 		/*tlEndOut.add('begin')
 		.to(cabLogoEnd.children, 0.4, {pixi:{scale:0.5, alpha:0.0}, ease:Power2.easeOut})
@@ -334,9 +335,7 @@ function init() {
 		ticker.stop();
 		bottomHits = 0;
 		//airHead.y = -airHead.height;
-
 		t.set(airHead, {pixi:{y:-200}});
-
 		if (lives === 3 ) {
 			t.to(heart1, 0.05, {pixi:{alpha:0}, ease:Power3.easeOut, yoyo:true, repeat:4});
 			lives = 2;
@@ -360,8 +359,6 @@ function init() {
 
 
 	function handleGameOver( won ) {
-
-
 
 		playing = false;
 
@@ -402,10 +399,12 @@ function init() {
 		.from(yourScoreText, 	0.6, {pixi:{y:'+=40',  alpha:0}, ease:Elastic.easeOut}, '-=0.55')
 		.from(endSubhead, 		0.6, {pixi:{y:'+=40',  alpha:0}, ease:Elastic.easeOut}, '-=0.55')
 		.from(endCtaHolder1, 	0.6, {pixi:{y:'+=40',  alpha:0}, ease:Elastic.easeOut}, '-=0.55')
-		.from(endCtaHolder2, 	0.6, {pixi:{y:'+=40',  alpha:0}, ease:Elastic.easeOut, onComplete:setUpEndCta}, '-=0.55')
+		.from(endCtaHolder2, 	0.6, {pixi:{y:'+=40',  alpha:0}, ease:Elastic.easeOut}, '-=0.55')
 		.from(ahLogoEnd, 		0.6, {pixi:{scale:0.7, alpha:0}, ease:Power3.easeOut}, '+=0.1')
-		.addCallback(function() { ahLogoEnd.play() }, '-=0.65')
+		.addCallback(function() { ahLogoEnd.play(); setUpEndCta(); }, '-=0.65')
 		.add('end');
+
+		//, onComplete:setUpEndCta
 
 		function setUpEndCta() {
 			log('end cta');
@@ -440,9 +439,9 @@ function init() {
 
 
 	function handleFlap() {
-		log('HANDLE FLAP');
+		//log('HANDLE FLAP');
 		if (playing === true) {
-			log('FLAP');
+			//log('FLAP');
 			flapSound.play();
 			t.to(rightLeg, 	0.3, {pixi:{rotation:20}});
 			t.to(leftLeg, 	0.3, {pixi:{rotation:40}});
@@ -519,7 +518,7 @@ function init() {
 				candies[i].y = Utils.random(50, stageH - 100);
 			}
 			if (Utils.hitTest(candies[i], airHead)) {
-				log('CANDY COLLISION');
+				//log('CANDY COLLISION');
 				candies[i].x = stageW + Utils.random(200, 400);
 				candies[i].y = Utils.random(50, stageH - 100);
 				handleScore();
@@ -587,7 +586,7 @@ function init() {
 		.add('end');
 
 		function destroyIntro() {
-			log('Destroy Intro');
+			//log('Destroy Intro');
 			intro.alpha = 0.0;
 			intro.destroy();
 			ticker.start();
