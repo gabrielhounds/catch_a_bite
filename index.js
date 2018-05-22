@@ -205,15 +205,27 @@ function init() {
 		$(game).css({width:1280, height:500});
 		app = new Application({width : 1280, height : 500, legacy : true});
 	} else if (_width < 1280 && _width >= 728 ) {
-		screenSize = 'tablet';
-		//log(screenSize);
-		$(game).css({width:'100%', height:500});
-		app = new Application({width : _width, height : 500, forceCanvas : true});
+      	screenSize = 'tablet';
+      	if (_height > 500) {
+			//log(screenSize);
+			$(game).css({width:'100%', height:500});
+          	app = new Application({width : _width, height : 500, forceCanvas : true});
+        } else {
+          $(game).css({width:'100%', height:'100%'});
+          app = new Application({width : _width, height : _height, forceCanvas : true});
+        }
 	} else if ( _width < 728 ) {
-		screenSize = 'mobile';
-		//log(screenSize);
-		$(game).css({width:'100%', height:'100%'});
-		app = new Application({width : _width, height : _height, forceCanvas : true});
+
+      	if(Math.abs(window.orientation) === 90) {
+          	screenSize = 'tablet';
+          	$(game).css({width:'100%', height:'100%'});
+        	app = new Application({width : _width, height : _height, forceCanvas : true});
+        } else {
+          	screenSize = 'mobile';
+			//log(screenSize);
+			$(game).css({width:'100%', height:'100%'});
+			app = new Application({width : _width, height : _height, forceCanvas : true});
+        }
 	}
 
 
