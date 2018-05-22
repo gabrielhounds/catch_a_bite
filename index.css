@@ -49,3 +49,13 @@ div {
   transform: translate(-50%);
   background-color: #000000;
 }
+
+#closeBtn {
+  top: 0;
+  right: 0;
+  width: 50px;
+  height: 50px;
+  z-index: 999;
+  background-image: url(closeBtn.png);
+  cursor: pointer;
+}

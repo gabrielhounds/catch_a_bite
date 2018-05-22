@@ -26,8 +26,6 @@ function init() {
 	var tlEndOut 	= new TimelineMax({paused:true});
 	var tlGameOver 	= new TimelineMax({paused:true});
 
-
-
 	Text = (function() {
 		var interfaceTextStyle = new PIXI.TextStyle({
 			align : 'center',
@@ -80,7 +78,7 @@ function init() {
 	var ctaBg, ctaText, ctaHolder, overlay, ahLogo, logoTextures, instructionText, cabLogo, cabCatch, cabA, cabBite, cabBg, cabCandy1, cabCandy2, cabCandy3, cabCandy4, intro;
 
 	//MAIN
-	var bgHolder, candyHolder, fgHolder, airheadHolder, hitRect;
+	var main, bgHolder, candyHolder, fgHolder, airheadHolder, hitRect;
 	var sky_bg, buildings, trees, hedges, street, lightpoles;
 	var candy0, candy1, candy2, candy3, candy4, candy5, candy6;
 	var airHead, airBody, leftArm, rightArm, leftLeg, rightLeg, torso, head, pelvis, headTextures, ashleigh;
@@ -125,6 +123,7 @@ function init() {
 	won, lost,
 
 	playing 		= false,
+	introPlaying 	= false,
 	_width 			= window.innerWidth,
 	_height 		= window.innerHeight;
 
@@ -195,6 +194,9 @@ function init() {
 
 
 	var game = $('<div>', {id:'game'}).appendTo('body');
+
+	var closeBtn = $('<div>', {id : 'closeBtn'}).appendTo(game);
+
 
 
 	if (_width >= 1280 ) {
@@ -342,7 +344,6 @@ function init() {
 		.add('end');
 		//endFrame.position.set(0, stageH);
 		//tlEndOut.play();
-
 		function initReplay() {
 			log('INIT REPLAY');
 			endFrame.position.set(0, stageH);
@@ -425,10 +426,11 @@ function init() {
 		.from(cabCandy3End, 	0.6, {pixi:{scale:1.2, alpha:0}, ease:Elastic.easeOut}, '-=0.55')
 		.from(yourScoreText, 	0.6, {pixi:{y:'+=40',  alpha:0}, ease:Elastic.easeOut}, '-=0.55')
 		.from(endSubhead, 		0.6, {pixi:{y:'+=40',  alpha:0}, ease:Elastic.easeOut}, '-=0.55')
+		.from(ahLogoEnd, 		0.6, {pixi:{scale:0.7, alpha:0}, ease:Power3.easeOut}, '+=0.1')
+		.addCallback(function() { ahLogoEnd.play(); }, '-=0.65')
 		.from(endCtaHolder1, 	0.6, {pixi:{y:'+=40',  alpha:0}, ease:Elastic.easeOut}, '-=0.55')
 		.from(endCtaHolder2, 	0.6, {pixi:{y:'+=40',  alpha:0}, ease:Elastic.easeOut}, '-=0.55')
-		.from(ahLogoEnd, 		0.6, {pixi:{scale:0.7, alpha:0}, ease:Power3.easeOut}, '+=0.1')
-		.addCallback(function() { ahLogoEnd.play(); setUpEndCta(); }, '-=0.65')
+		.addCallback(function() { setUpEndCta(); })
 		.add('end');
 
 		//, onComplete:setUpEndCta
@@ -544,7 +546,7 @@ function init() {
 			if (candies[i].x < 0 - candies[i].width) {
 
 				if ( screenSize === 'mobile' ) {
-					candies[i].x = stageW + Utils.random(0, stageW * 2);
+					candies[i].x = stageW + Utils.random(0, stageW * 4);
 				} else {
 					candies[i].x = stageW + candies[i].width;
 				}
@@ -556,7 +558,7 @@ function init() {
 				//candies[i].x = stageW + Utils.random(200, 400);
 
 				if ( screenSize === 'mobile' ) {
-					candies[i].x = stageW + Utils.random(0, stageW * 2);
+					candies[i].x = stageW + Utils.random(0, stageW * 4);
 				} else {
 					candies[i].x = stageW + Utils.random(200, 400);
 				}
@@ -691,6 +693,7 @@ function init() {
 		tlIntro.play();
 
 		introTicker.start();
+		introPlaying = true;
 	}
 
 	function setPosition() {
@@ -782,7 +785,7 @@ function init() {
 
 
 			ahLogo.scale.set(0.60);
-			ahLogo.position.set( stageW / 2, stageH / 2 + ahLogo.height / 2 + 20);
+			ahLogo.position.set( stageW / 2, stageH / 2 + ahLogo.height / 2 );
 
 			instructionText.style.fontSize = '20px';
 			instructionText.style.letterSpacing = 1;
@@ -865,42 +868,55 @@ function init() {
 		candies = [candy0, candy1, candy2, candy3, candy4, candy5, candy6];
 
 		for ( var i = 0; i < candies.length; i++ ) {
-
-			t.set(candies[i], {pixi:{x:Utils.random(stageW, stageW * 2), y:Utils.random(50, stageH - 100)}} );
-
+			if (screenSize === 'mobile') {
+				t.set(candies[i], {pixi:{x:Utils.random(stageW, stageW * 4), y:Utils.random(50, stageH - 100)}} );
+			} else {
+				t.set(candies[i], {pixi:{x:Utils.random(stageW, stageW * 2), y:Utils.random(50, stageH - 100)}} );
+			}
 		}
 
 		if (screenSize === 'mobile') {
 
-			bgHolder.height = stageH;
-			bgHolder.width = stageW;
-			sky_bg.scale.y = 1.2;
-			sky_bg.height = stageH;
-
-			street.height = 278 / 2;
-			street.position.set(0, stageH - street.height);
-
-			buildings.position.set(0, stageH - street.height - buildings.height - 50);
-
-			hedges.height = stageH;
-			hedges.position.set(0, street.height - 20);
-
-			trees.position.set(0, stageH - street.height - trees.height - 60);
-
-
+			bgHolder.scale.set(stageH / 500);
 			lightpoles.alpha = 0;
+
+			//bgHolder.height = stageH;
+			//bgHolder.width = stageW;
+			//street.height = stageH;
+			//street.position.set(0,0);
+			//street.tileScale = stageH / 500;
+			/*sky_bg.scale.y = 1.2;
+			sky_bg.height = stageH;
+			//street.height = stageH / 3;
+			street.position.set(0, stageH - stageH * 0.27);
+			buildings.position.set(0, stageH - street.height - buildings.height - 50);
+			//hedges.height = stageH;
+			hedges.height = stageH;
+			hedges.position.set(0.0);
+			//hedges.position.set(0, street.height - 20);
+			trees.position.set(0, stageH - street.height - trees.height - 60);
+			lightpoles.alpha = 0;*/
 			//lightpoles.height = 500;
 			//lightpoles.position.set(0, stageH - lightpoles.height);
 			//lightpoles.tilePosition.x -= 200;
 
 		} else {
 
-			buildings.position.set(0, 64);
+			buildings.position.set(0, 0);
+			trees.position.set(0, 0);
+			hedges.position.set(0, 0);
+			street.position.set(0, 0);
+			lightpoles.position.set(0, 0);
+			lightpoles.tilePosition.x -= 200;
+
+
+			/*buildings.position.set(0, 64);
 			trees.position.set(0, 202);
 			hedges.position.set(0, 0);
 			street.position.set(0, 360);
 			lightpoles.position.set(0, 0);
 			lightpoles.tilePosition.x -= 200;
+			*/
 
 		}
 
@@ -1117,12 +1133,21 @@ function init() {
 
 		// - BackGround
 		bgHolder 		= new PIXI.Container();
-		sky_bg 		= new PIXI.extras.TilingSprite(resources['sky_bg_@2x.jpg'].texture, stageW, stageH);
-		buildings 		= new PIXI.extras.TilingSprite(resources['buildings_@2x.png'].texture, stageW, 490 / 2);
-		trees 			= new PIXI.extras.TilingSprite(resources['trees_@2x.png'].texture, stageW, 235 / 2);
+
+		/*sky_bg 		= new PIXI.extras.TilingSprite(resources['sky_bg_@2x.jpg'].texture, stageW, stageH);
+		buildings 		= new PIXI.extras.TilingSprite(resources['buildings2_@2x.png'].texture, stageW, 490 / 2);
+		trees 			= new PIXI.extras.TilingSprite(resources['trees2_@2x.png'].texture, stageW, 235 / 2);
 		hedges 		= new PIXI.extras.TilingSprite(resources['hedge_@2x.png'].texture, stageW, stageH);
-		street 		= new PIXI.extras.TilingSprite(resources['road_@2x.jpg'].texture, stageW, 278 / 2);
+		street 		= new PIXI.extras.TilingSprite(resources['road2_@2x.png'].texture, stageW, 278 / 2);
+		lightpoles 	= new PIXI.extras.TilingSprite(resources['lightpost_foreground_@2x.png'].texture, 3600 / 2, stageH);*/
+
+		sky_bg 		= new PIXI.extras.TilingSprite(resources['sky_bg_@2x.jpg'].texture, stageW, stageH);
+		buildings 		= new PIXI.extras.TilingSprite(resources['buildings2_@2x.png'].texture, stageW, stageH);
+		trees 			= new PIXI.extras.TilingSprite(resources['trees2_@2x.png'].texture, stageW, stageH);
+		hedges 		= new PIXI.extras.TilingSprite(resources['hedge_@2x.png'].texture, stageW, stageH);
+		street 		= new PIXI.extras.TilingSprite(resources['road2_@2x.png'].texture, stageW, stageH);
 		lightpoles 	= new PIXI.extras.TilingSprite(resources['lightpost_foreground_@2x.png'].texture, 3600 / 2, stageH);
+
 
 		// - AIRHEAD
 		airHead 		= new PIXI.Container();
@@ -1200,7 +1225,7 @@ function init() {
 	}
 
 	loader.add([
-		'buildings_@2x.png', 'hedge_@2x.png', 'lightpost_foreground_@2x.png', 'road_@2x.jpg', 'sky_bg_@2x.jpg', 'trees_@2x.png', 'overlayBg_@2x.png', 'ah_body.png', 'ah_head_00.png', 'ah_head_01.png', 'ah_head_02.png', 'ah_leftArm.png', 'ah_leftLeg.png', 'ah_pelvis.png', 'ah_rightArm.png', 'ah_rightLeg.png', 'candy_00.png', 'candy_01.png', 'candy_02.png', 'candy_03.png', 'candy_04.png', 'candy_05.png', 'candy_06.png', 'heart.png', 'cta_bg.png', 'logo00.png', 'logo01.png', 'logo02.png', 'logo03.png', 'logo04.png', 'logo05.png', 'logo06.png', 'logo07.png', 'logo08.png', 'logo09.png', 'logo10.png', 'logo11.png', 'logo12.png', 'cab_catch.png', 'cab_a.png', 'cab_bite.png', 'cab_bg.png', 'cab_candy1.png', 'cab_candy2.png', 'cab_candy3.png', 'cab_candy4.png', 'endOverlay.png', 'ashleigh.png'
+		'buildings_@2x.png', 'hedge_@2x.png', 'lightpost_foreground_@2x.png', 'road_@2x.jpg', 'sky_bg_@2x.jpg', 'trees_@2x.png', 'overlayBg_@2x.png', 'ah_body.png', 'ah_head_00.png', 'ah_head_01.png', 'ah_head_02.png', 'ah_leftArm.png', 'ah_leftLeg.png', 'ah_pelvis.png', 'ah_rightArm.png', 'ah_rightLeg.png', 'candy_00.png', 'candy_01.png', 'candy_02.png', 'candy_03.png', 'candy_04.png', 'candy_05.png', 'candy_06.png', 'heart.png', 'cta_bg.png', 'logo00.png', 'logo01.png', 'logo02.png', 'logo03.png', 'logo04.png', 'logo05.png', 'logo06.png', 'logo07.png', 'logo08.png', 'logo09.png', 'logo10.png', 'logo11.png', 'logo12.png', 'cab_catch.png', 'cab_a.png', 'cab_bite.png', 'cab_bg.png', 'cab_candy1.png', 'cab_candy2.png', 'cab_candy3.png', 'cab_candy4.png', 'endOverlay.png', 'ashleigh.png', 'buildings2_@2x.png', 'road2_@2x.png', 'trees2_@2x.png', 'closeBtn.png'
 	]).on('progress', loadProgressHandler).load(setUp);
 
 	ticker.add( function(delta){
@@ -1272,17 +1297,23 @@ function init() {
 		candyIntro(delta);
 	});
 
+	$(closeBtn).click( function() {
+		log('CLOSE CLICK');
 
+		if (introPlaying === true) {
+			introTicker.stop();
+		}
 
+		if (playing === true) {
+			ticker.stop();
+			bgSound.stop();
+			flapSound.stop();
+		}
 
-
-
+		t.to(game, 0.4, {height:0});
+	});
 
 }
-
-
-
-
 
 
 
