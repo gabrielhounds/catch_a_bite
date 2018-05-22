@@ -29,7 +29,7 @@ function init() {
 	Text = (function() {
 		var interfaceTextStyle = new PIXI.TextStyle({
 			align : 'center',
-			fontFamily: 'uniform_roundedbold',
+			fontFamily: 'uniform_roundedbold, Arial',
 			fontSize: '28px',
 			letterSpacing: -1,
 			fill: '0xFFFFFF',
@@ -37,7 +37,7 @@ function init() {
 
 		var ctaTextStyle = new PIXI.TextStyle({
 			align : 'center',
-			fontFamily: 'uniform_roundedbold',
+			fontFamily: 'uniform_roundedbold, Arial',
 			fontSize: '28px',
 			letterSpacing: -2,
 			fill: '0xFFFFFF',
@@ -46,14 +46,14 @@ function init() {
 		var subHeadTextStyle = new PIXI.TextStyle({
 			align : 'center',
 			fontSize: '36px',
-			fontFamily:'uniform_roundedblack',
+			fontFamily:'uniform_roundedblack, Arial',
 			fill: '0xFFFFFF',
 			letterSpacing:1
 		});
 		var yourScoreTextStyle = new PIXI.TextStyle({
 			align : 'center',
 			fontSize: '100px',
-			fontFamily:'uniform_roundedultra',
+			fontFamily:'uniform_roundedultra, Arial',
 			fill: '0xFFFFFF',
 			letterSpacing: -4
 		});
@@ -242,7 +242,7 @@ function init() {
 	var stageH = app.renderer.view.height;
 
 	loadingText = new PIXI.Text('LOADING      ');
-	loadingText.style = {fill: 'WHITE', font:'20px uniform_roundedbold'};
+	loadingText.style = {fill: 'WHITE', font:'20px uniform_roundedbold, Arial'};
 	loadingText.position.set(stageW / 2 - loadingText.width / 2, stageH / 2);
 	app.stage.addChild(loadingText);
 
@@ -423,6 +423,16 @@ function init() {
 		}
 
 		yourScoreText.setText(' Your score: ' + score + ' ');
+
+		if (screenSize === 'desktop') {
+			yourScoreText.position.set(stageW / 3 - yourScoreText.width / 2, 168);
+		} else if ( screenSize === 'tablet' ) {
+			yourScoreText.position.set(stageW / 3 - yourScoreText.width / 2, stageH / 2 - yourScoreText.height );
+		} else if ( screenSize === 'mobile') {
+			yourScoreText.position.set(stageW / 2 - yourScoreText.width / 2, stageH / 2 - yourScoreText.height * 2 );
+		}
+
+
 		//yourScoreText.position.set(stageW / 3 - yourScoreText.width / 2, 168);
 
 		tlGameOver.add('begin')
@@ -693,13 +703,17 @@ function init() {
 		endFrame.position.set(0, stageH);
 
 		ctaHolder.on('mouseover', function(e){
+
 			t.to(ctaBg, 0.6, {pixi:{scale:1.2}, ease:Elastic.easeOut});
+
 			t.to(ctaText, 0.2, {pixi:{y:'+=10', alpha:0}, ease:Power3.easeOut});
 			t.set(ctaText, {pixi:{y:'-=30'}, delay:0.2})
 			t.to(ctaText, 0.6, {pixi:{y:'+=20', alpha:1, scale:1.1}, ease:Elastic.easeOut, delay:0.21});
+			t.to(ctaText, 0.1, {pixi:{y:0}, delay:0.25});
+
 		}).on('mouseout', function(e){
 			t.to(ctaBg, 0.6, {pixi:{scale:1.0}, ease:Elastic.easeOut});
-			t.to(ctaText, 0.6, {pixi:{scale:1.0}, ease:Elastic.easeOut});
+			t.to(ctaText, 0.6, {pixi:{scale:1.0, y:0}, ease:Elastic.easeOut});
 		});
 		ctaHolder.on('pointerup', setUpGame);
 		tlIntro.play();
@@ -889,6 +903,13 @@ function init() {
 
 		if (screenSize === 'mobile') {
 
+			buildings.position.set(0, 64);
+			trees.position.set(0, 202);
+			hedges.position.set(0, 0);
+			street.position.set(0, 360);
+			lightpoles.position.set(0, 0);
+			lightpoles.tilePosition.x -= 200;
+
 			bgHolder.scale.set(stageH / 500);
 			lightpoles.alpha = 0;
 
@@ -914,21 +935,20 @@ function init() {
 
 		} else {
 
-			buildings.position.set(0, 0);
+			/*buildings.position.set(0, 0);
 			trees.position.set(0, 0);
 			hedges.position.set(0, 0);
 			street.position.set(0, 0);
 			lightpoles.position.set(0, 0);
-			lightpoles.tilePosition.x -= 200;
+			lightpoles.tilePosition.x -= 200;*/
 
 
-			/*buildings.position.set(0, 64);
+			buildings.position.set(0, 64);
 			trees.position.set(0, 202);
 			hedges.position.set(0, 0);
 			street.position.set(0, 360);
 			lightpoles.position.set(0, 0);
 			lightpoles.tilePosition.x -= 200;
-			*/
 
 		}
 
@@ -1063,9 +1083,7 @@ function init() {
 		buildStage();
 	}
 
-	function loadProgressHandler() {
-		loadingText.setText( 'LOADING ' + Math.round(loader.progress) + '%');
-	}
+
 
 	function setUp() {
 		//log('SETUP')
@@ -1146,20 +1164,12 @@ function init() {
 		// - BackGround
 		bgHolder 		= new PIXI.Container();
 
-		/*sky_bg 		= new PIXI.extras.TilingSprite(resources['sky_bg_@2x.jpg'].texture, stageW, stageH);
-		buildings 		= new PIXI.extras.TilingSprite(resources['buildings2_@2x.png'].texture, stageW, 490 / 2);
-		trees 			= new PIXI.extras.TilingSprite(resources['trees2_@2x.png'].texture, stageW, 235 / 2);
-		hedges 		= new PIXI.extras.TilingSprite(resources['hedge_@2x.png'].texture, stageW, stageH);
-		street 		= new PIXI.extras.TilingSprite(resources['road2_@2x.png'].texture, stageW, 278 / 2);
-		lightpoles 	= new PIXI.extras.TilingSprite(resources['lightpost_foreground_@2x.png'].texture, 3600 / 2, stageH);*/
-
 		sky_bg 		= new PIXI.extras.TilingSprite(resources['sky_bg_@2x.jpg'].texture, stageW, stageH);
-		buildings 		= new PIXI.extras.TilingSprite(resources['buildings2_@2x.png'].texture, stageW, stageH);
-		trees 			= new PIXI.extras.TilingSprite(resources['trees2_@2x.png'].texture, stageW, stageH);
+		buildings 		= new PIXI.extras.TilingSprite(resources['buildings_@2x.png'].texture, stageW, 490 / 2);
+		trees 			= new PIXI.extras.TilingSprite(resources['trees_@2x.png'].texture, stageW, 235 / 2);
 		hedges 		= new PIXI.extras.TilingSprite(resources['hedge_@2x.png'].texture, stageW, stageH);
-		street 		= new PIXI.extras.TilingSprite(resources['road2_@2x.png'].texture, stageW, stageH);
+		street 		= new PIXI.extras.TilingSprite(resources['road_@2x.jpg'].texture, stageW, 278 / 2);
 		lightpoles 	= new PIXI.extras.TilingSprite(resources['lightpost_foreground_@2x.png'].texture, 3600 / 2, stageH);
-
 
 		// - AIRHEAD
 		airHead 		= new PIXI.Container();
@@ -1211,7 +1221,7 @@ function init() {
 		endCtaHolder2	= new PIXI.Container();
 		cabLogoEnd 		= new PIXI.Container();
 
-		yourScoreText 	= new PIXI.Text('Your score: 0 ');
+		yourScoreText 	= new PIXI.Text('Your score: 0   ');
 		endSubhead 	= new PIXI.Text(' Great job! ' );
 		cabCatchEnd  	= new PIXI.Sprite(resources['cab_catch.png'].texture);
 		cabAEnd 	 	= new PIXI.Sprite(resources['cab_a.png'].texture);
@@ -1234,6 +1244,10 @@ function init() {
 		endCtaText2.style 		= Text.ctaTextStyle;
 
 		setPosition();
+	}
+
+	function loadProgressHandler() {
+		loadingText.setText( 'LOADING ' + Math.round(loader.progress) + '%');
 	}
 
 	loader.add([
