@@ -119,6 +119,7 @@ function init() {
 
 	bgSpeedMod 			= 0.0,
 	candySpeedMod 		= 0.0,
+	clickCount			= 0,
 
 	won, lost,
 
@@ -277,20 +278,16 @@ function init() {
 			volume: 0.5
 		});
 
-
 		var audioCount = 0;
 		function updateAudioProgress() {
 			audioCount += 1;
 			//log(audioCount);
 			if (audioCount === 7) {
-				introTicker.stop();
-				introTicker.remove();
-				introTicker.destroy();
-				setTimeout( function() { bgSound.play(); }, 500);
+				setTimeout( function() { bgSound.play(); ticker.start(); playing = true;}, 500);
 				intro.alpha = 0.0;
 				intro.destroy();
-				playing = true;
-				ticker.start();
+
+
 			}
 		}
 
@@ -308,10 +305,13 @@ function init() {
 		//log('SET REPLAY');
 
 		buttonSound.play();
-
 		endCtaHolder1.off('pointerup');
 
-		airHead.y = -200;
+		airBody.alpha = (0.0);
+        head.alpha = (0.0);
+        ashleigh.alpha = (1.0);
+
+		airHead.y = stageH - 140;
 
 		if (playing === false) {
 			score = 0;
@@ -330,6 +330,7 @@ function init() {
 			gameTime 			= 30;
 			elapsedTime 		= 0;
 			bottomHits 			= 0;
+			clickCount			= 0;
 
 			for ( var i = 0; i < candies.length; i++ ) {
 				t.set(candies[i], {pixi:{x:Utils.random(stageW, stageW * 2), y:Utils.random(50, stageH - 100)}} );
@@ -494,6 +495,8 @@ function init() {
 		if (playing === true) {
 			//log('FLAP');
 
+			clickCount += 1;
+
 			flapSound.play();
 			t.to(rightLeg, 	0.3, {pixi:{rotation:20}});
 			t.to(leftLeg, 	0.3, {pixi:{rotation:40}});
@@ -511,7 +514,10 @@ function init() {
 
 	function handleAirHead(delta) {
 
-		airHead.y += sinkRate;
+		if (score > 0 || clickCount > 2 ) {
+          airHead.y += sinkRate;
+        }
+
 		airHead.y -= flapBoost;
 
 		if ( flapBoost > 0) {
@@ -647,11 +653,12 @@ function init() {
 	*/
 	function setUpGame() {
 		//log('SET UP GAME');
-
 		initAudio();
-
-		//airHead.y = -airHead.height;
-		airHead.y = -200;
+      	introTicker.stop();
+		introTicker.remove();
+		introTicker.destroy();
+      	airHead.y = stageH - 140;
+		//airHead.y = -200;
 
 		tlOutro.add('begin')
 		.to(main, 				0.6, {pixi:{blurX:0.0, blurY:0.0}, ease:Power2.easeOut})
@@ -1236,7 +1243,7 @@ function init() {
 		endCtaBg1 		= new PIXI.Sprite(resources['cta_bg.png'].texture);
 		endCtaBg2 		= new PIXI.Sprite(resources['cta_bg.png'].texture);
 		endCtaText1 	= new PIXI.Text(' Play Again? ');
-		endCtaText2 	= new PIXI.Text(' Find Near You ');
+		endCtaText2 	= new PIXI.Text(' Find a pack ');
 		ahLogoEnd 		= new PIXI.extras.AnimatedSprite(logoTextures);
 		overlayEnd 	= new PIXI.Sprite(resources['endOverlay.png'].texture);
 
@@ -1299,14 +1306,22 @@ function init() {
 		vx *= friction;
 		vy *= friction;
 		//airHead.x += vx;
-		airHead.y += vy + 30;
 
-		//head.rotation = (-dx / flopRate * (Math.PI / 180));
-		rightLeg.rotation = (dx / 1.5 * (Math.PI / 180));
-		leftLeg.rotation = (dx / 2.5 * (Math.PI / 180));
-		leftArm.rotation = (dx / flopRate * (Math.PI / 180));
-		rightArm.rotation = (dx / flopRate * (Math.PI / 180));
-		airBody.rotation = (dx / 20.5 * (Math.PI / 180));
+		if (screenSize === 'desktop') {
+			airHead.y += vy + 30;
+
+			//head.rotation = (-dx / flopRate * (Math.PI / 180));
+			rightLeg.rotation = (dx / 1.5 * (Math.PI / 180));
+			leftLeg.rotation = (dx / 2.5 * (Math.PI / 180));
+			leftArm.rotation = (dx / flopRate * (Math.PI / 180));
+			rightArm.rotation = (dx / flopRate * (Math.PI / 180));
+			airBody.rotation = (dx / 20.5 * (Math.PI / 180));
+
+		} else {
+          airHead.y = stageH - 140;
+        }
+
+
 
 		//head.rotation = (-dy / flopRate * (Math.PI / 180));
 		//log( 'ROTATION: ' + (dx * (Math.PI / 180)) );
